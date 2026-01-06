@@ -113,7 +113,7 @@ property-dunia/
 ### **Clone the Repository**
 ```bash
 git clone https://github.com/Tushar-Goyal-9/Property-Management-Website.git
-cd property-dunia
+cd Property-Management-Website
 ```
 
 ### **Backend**
