@@ -1,0 +1,12 @@
+# Global node_modules (if any)
+node_modules/
+
+# Environment variables (VERY IMPORTANT)
+.env
+
+# Logs
+*.log
+
+# OS / System files
+.DS_Store
+Thumbs.db
