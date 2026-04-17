@@ -1,11 +1,18 @@
-import axios from "axios";
+import axios from 'axios';
 
-const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+
+const api = axios.create({
+  baseURL: API_URL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+// ✅ Do NOT auto-redirect on 401; just reject the promise
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token"); // or from Zustand store
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -14,5 +21,4 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-
-export default API;
+export default api;

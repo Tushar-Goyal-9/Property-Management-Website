@@ -1,93 +1,136 @@
-import User from "../models/User.js";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
+// Generate JWT
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: '7d',
+  });
+};
 
-// @desc    Register new user
-// @route   POST /api/auth/register
+// @desc    Register a new user
+// @route   POST /api/v1/auth/register
 // @access  Public
 export const registerUser = async (req, res) => {
+  console.log('Register attempt:', req.body);
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone, agencyName, licenseNumber } = req.body;
 
-    // 1. Check if user already exists
     const userExists = await User.findOne({ email });
+
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      res.status(400);
+      throw new Error('User already exists');
     }
 
-    // 2. Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // 3. Create user
     const user = await User.create({
       name,
       email,
-      password: hashedPassword,
-      role,
+      password,
+      role: role || 'user',
+      phone,
+      agencyName: role === 'agent' ? agencyName : '',
+      licenseNumber: role === 'agent' ? licenseNumber : '',
     });
 
-    // 4. Send response
-    res.status(201).json({
-      message: "User registered successfully",
-      user: {
-        id: user._id,
+    if (user) {
+      const token = generateToken(user._id);
+
+      // Set HTTP-only cookie for browser requests
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      res.status(201).json({
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-      },
-    });
+        phone: user.phone,
+        avatar: user.avatar,
+        agencyName: user.agencyName,
+        isVerified: user.isVerified,
+        wishlist: user.wishlist,
+        token,
+      });
+    } else {
+      res.status(400);
+      throw new Error('Invalid user data');
+    }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Register error:', error);
+    res.status(400).json({ message: error.message });
   }
 };
 
-
-
-// @desc    Login user
-// @route   POST /api/auth/login
+// @desc    Auth user & get token
+// @route   POST /api/v1/auth/login
 // @access  Public
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Find user by email
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid email or password" });
-    }
 
-    // 2. Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password" });
-    }
+    if (user && (await user.matchPassword(password))) {
+      const token = generateToken(user._id);
 
-    // 3. Generate JWT token
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role: user.role,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    );
+      // Set HTTP-only cookie for browser requests
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
 
-    // 4. Send response
-    res.status(200).json({
-      message: "Login successful",
-      user: {
-        id: user._id,
+      res.json({
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-      },
-      token,
-    });
+        phone: user.phone,
+        avatar: user.avatar,
+        agencyName: user.agencyName,
+        isVerified: user.isVerified,
+        wishlist: user.wishlist,
+        token,
+      });
+    } else {
+      res.status(401);
+      throw new Error('Invalid email or password');
+    }
   } catch (error) {
+    console.error('Login error:', error);
+    res.status(401).json({ message: error.message });
+  }
+};
+
+// @desc    Logout user / clear cookie
+// @route   POST /api/v1/auth/logout
+// @access  Public
+export const logoutUser = (req, res) => {
+  res.cookie('token', '', {
+    httpOnly: true,
+    path: '/',
+    expires: new Date(0),
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
+};
+
+// @desc    Get current user profile
+// @route   GET /api/v1/auth/me
+// @access  Private
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    res.json(user);
+  } catch (error) {
+    console.error('Get me error:', error);
     res.status(500).json({ message: error.message });
   }
 };

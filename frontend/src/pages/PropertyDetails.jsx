@@ -1,112 +1,281 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import API from "../services/api";
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { toast } from "react-toastify";
+import api from '../services/api';
+import useAuthStore from '../store/authStore';
+import ImageGallery from '../components/property/ImageGallery';
+import Spinner from '../components/common/Spinner';
+import Button from '../components/common/Button';
+import Input from '../components/common/Input';
+import { formatPrice, formatDate } from '../utils/formatters';
+import PageWrapper from '../components/common/PageWrapper';
 
 const PropertyDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [property, setProperty] = useState(null);
-  const [currentImage, setCurrentImage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [inquiryForm, setInquiryForm] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    message: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // ✅ Sync inquiry form with user data when it becomes available
+  useEffect(() => {
+    if (user) {
+      setInquiryForm(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone,
+      }));
+    }
+  }, [user]);
+
+  // ✅ Correct spelling: checkWishlistStatus
+  const checkWishlistStatus = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { data } = await api.get('/users/wishlist'); // ✅ Correct endpoint
+      setIsWishlisted(data.some(p => p._id?.toString() === id));
+    } catch (error) {
+      console.error('Failed to check wishlist:', error);
+    }
+  }, [user, id]);
 
   useEffect(() => {
     const fetchProperty = async () => {
-      const res = await API.get(`/properties/${id}`);
-      setProperty(res.data);
+      try {
+        const { data } = await api.get(`/properties/${id}`);
+        setProperty(data);
+        if (user) 
+          checkWishlistStatus();
+
+      } catch (error) {
+        console.error('Failed to fetch property:', error);
+        navigate('/not-found');
+      } finally {
+        setLoading(false);
+      }
     };
     fetchProperty();
-  }, [id]);
+  }, [id, navigate, user, checkWishlistStatus]); // ✅ Added missing dependency
 
-  if (!property) return <p>Loading...</p>;
+  // ✅ Handle wishlist toggle
+  const handleWishlistToggle = async () => {
+  if (!user) {
+    toast.error("Please login first");
+    navigate('/login', { state: { from: { pathname: `/property/${id}` } } });
+    return;
+  }
 
-  const images =
-    property.images && property.images.length > 0
-      ? property.images
-      : ["https://via.placeholder.com/1200x600"];
+  try {
+    if (isWishlisted) {
+      await api.delete(`/users/wishlist/${id}`);
+      setIsWishlisted(false);
+      toast.info("Removed from wishlist");
+    } else {
+      await api.post(`/users/wishlist/${id}`);
+      setIsWishlisted(true);
+      toast.success("Added to wishlist ❤️");
+    }
+  } catch (error) {
+    console.error('Wishlist toggle failed:', error);
+    toast.error("Something went wrong");
+  }
+};
 
-  const nextImage = () => {
-    setCurrentImage((prev) => (prev + 1) % images.length);
+  const handleInquiryChange = (e) => {
+    setInquiryForm({ ...inquiryForm, [e.target.name]: e.target.value });
   };
 
-  const prevImage = () => {
-    setCurrentImage((prev) =>
-      prev === 0 ? images.length - 1 : prev - 1
-    );
+  const handleInquirySubmit = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      navigate('/login', { state: { from: { pathname: `/property/${id}` } } });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.post('/inquiries', {
+        propertyId: id,
+        ...inquiryForm,
+      });
+      alert('Inquiry sent successfully!');
+      setInquiryForm({ ...inquiryForm, message: '' });
+    } catch (error) {
+      console.error('Failed to send inquiry:', error);
+      alert('Failed to send inquiry. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) return <Spinner />;
+  if (!property) return null;
 
   return (
-    <div className="max-w-6xl mx-auto py-10 space-y-8">
+    <PageWrapper>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Breadcrumb */}
+      <nav className="mb-6 text-sm">
+        <Link to="/" className="text-gray-500 hover:text-teal-600">Home</Link>
+        <span className="mx-2 text-gray-400">/</span>
+        <Link to="/properties" className="text-gray-500 hover:text-teal-600">Properties</Link>
+        <span className="mx-2 text-gray-400">/</span>
+        <span className="text-gray-900">{property.title}</span>
+      </nav>
 
-      {/* IMAGE SLIDER */}
-      <div className="relative rounded-xl overflow-hidden bg-gray-100">
-        <img
-          src={images[currentImage]}
-          alt="Property"
-          className="w-full h-[420px] object-cover bg-black"
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column - Images & Details */}
+        <div className="lg:col-span-2 space-y-6">
+          <ImageGallery images={property.images} title={property.title} />
 
-        {images.length > 1 && (
-          <>
-            <button
-              onClick={prevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 px-3 py-1 rounded-full shadow"
-            >
-              ‹
-            </button>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{property.title}</h1>
+                <p className="text-gray-600 mt-1">{property.address}, {property.city}, {property.state}</p>
+              </div>
+              <button
+  onClick={handleWishlistToggle}
+  className={`p-2 rounded-full transition transform ${
+    isWishlisted
+      ? 'text-red-500 scale-110'
+      : 'text-gray-400 hover:text-red-500'
+  }`}
+  title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+>
+  <svg
+    className="h-7 w-7 transition"
+    fill={isWishlisted ? 'currentColor' : 'none'}
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+    />
+  </svg>
+</button>
+            </div>
 
-            <button
-              onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 px-3 py-1 rounded-full shadow"
-            >
-              ›
-            </button>
-          </>
-        )}
-      </div>
+            <div className="flex items-center space-x-4 mb-6">
+              <span className="text-3xl font-bold text-teal-600">{formatPrice(property.price)}</span>
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                property.listingType === 'Sale' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+              }`}>
+                For {property.listingType}
+              </span>
+              {property.featured && (
+                <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">Featured</span>
+              )}
+            </div>
 
-      {/* TITLE + PRICE */}
-      <div className="flex justify-between items-start flex-wrap gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold">{property.title}</h1>
-          <p className="text-gray-500 mt-1">📍 {property.location}</p>
+            <div className="grid grid-cols-3 gap-4 py-4 border-y border-gray-200">
+              <div className="text-center">
+                <p className="text-2xl font-semibold">{property.bedrooms}</p>
+                <p className="text-gray-500 text-sm">Bedrooms</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-semibold">{property.bathrooms}</p>
+                <p className="text-gray-500 text-sm">Bathrooms</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-semibold">{property.area}</p>
+                <p className="text-gray-500 text-sm">Sq. Ft.</p>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <h2 className="text-xl font-semibold mb-3">Description</h2>
+              <p className="text-gray-700 whitespace-pre-line">{property.description}</p>
+            </div>
+          </div>
         </div>
 
-        <div className="text-2xl font-bold text-blue-600">
-          ₹ {property.price.toLocaleString()}
+        {/* Right Column - Agent & Inquiry */}
+        <div className="space-y-6">
+          {/* Agent Info */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Listed by</h2>
+            <div className="flex items-center space-x-4">
+              <div className="h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center">
+                <span className="text-teal-600 font-semibold text-lg">
+                  {property.owner?.name?.charAt(0) || 'A'}
+                </span>
+              </div>
+              <div>
+                <p className="font-medium">{property.owner?.name || 'Agent'}</p>
+                <p className="text-sm text-gray-500">{property.owner?.agencyName || 'Property Dunia'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Inquiry Form */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Contact Agent</h2>
+            <form onSubmit={handleInquirySubmit} className="space-y-4">
+              <Input
+                label="Name"
+                name="name"
+                value={inquiryForm.name}
+                onChange={handleInquiryChange}
+                required
+              />
+              <Input
+                label="Email"
+                type="email"
+                name="email"
+                value={inquiryForm.email}
+                onChange={handleInquiryChange}
+                required
+              />
+              <Input
+                label="Phone"
+                type="tel"
+                name="phone"
+                value={inquiryForm.phone}
+                onChange={handleInquiryChange}
+                required
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                <textarea
+                  name="message"
+                  value={inquiryForm.message}
+                  onChange={handleInquiryChange}
+                  rows="4"
+                  placeholder="I'm interested in this property..."
+                  className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500 focus:border-teal-500"
+                  required
+                />
+              </div>
+              <Button type="submit" isLoading={submitting} className="w-full">
+                Send Inquiry
+              </Button>
+            </form>
+          </div>
+
+          {/* Property Stats */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex justify-between text-sm text-gray-500">
+              <span>Posted: {formatDate(property.createdAt)}</span>
+              <span>Views: {property.views || 0}</span>
+              <span>Inquiries: {property.inquiries || 0}</span>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* PROPERTY STATS */}
-    <div className="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl">
-  <div className="text-center">
-    <div className="text-xl font-semibold">0</div>
-    <div className="text-gray-500 text-sm">Beds</div>
-  </div>
-  <div className="text-center">
-    <div className="text-xl font-semibold">2</div>
-    <div className="text-gray-500 text-sm">Baths</div>
-  </div>
-  <div className="text-center">
-    <div className="text-xl font-semibold">200</div>
-    <div className="text-gray-500 text-sm">Sqft</div>
-  </div>
-</div>
-
-
-      {/* DESCRIPTION */}
-      <div className="bg-white p-6 rounded-xl shadow-sm">
-        <h2 className="text-lg font-medium mb-2">Description</h2>
-        <p className="text-gray-700">
-          {property.description || "No description provided."}
-        </p>
-      </div>
-
-      {/* CONTACT DETAILS */}
-      <div className="bg-blue-50 p-6 rounded-xl">
-        <h2 className="text-lg font-medium mb-3">Contact Details</h2>
-        <p><strong>Name:</strong> {property.contactName}</p>
-        <p><strong>Phone:</strong> {property.contactPhone}</p>
-        <p><strong>Email:</strong> {property.contactEmail}</p>
       </div>
     </div>
+    </PageWrapper>
   );
 };
 

@@ -1,30 +1,33 @@
-import express from "express";
+import express from 'express';
 import {
-  addProperty,
-  getAllProperties,
+  getProperties,
   getPropertyById,
-} from "../controllers/propertyController.js";
-
-// 👇 import BOTH middlewares
-import { protect, adminOnly } from "../middleware/authMiddleware.js";
+  createProperty,
+  updateProperty,
+  deleteProperty,
+  updatePropertyStatus,
+  toggleFeatured,
+} from '../controllers/propertyController.js';
+import { protect, admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// ===============================
-// PUBLIC ROUTES
-// ===============================
+// ✅ Public + filter route
+router.route('/')
+  .get(getProperties)
+  .post(protect, createProperty);
 
-// Get all properties (anyone can see)
-router.get("/", getAllProperties);
+// ✅ ADD THIS (VERY IMPORTANT)
+router.get('/admin', protect, admin, getProperties);
 
-// Get single property (anyone can see)
-router.get("/:id", getPropertyById);
+// ❗ MUST BE AFTER /admin
+router.route('/:id')
+  .get(getPropertyById)
+  .put(protect, updateProperty)
+  .delete(protect, deleteProperty);
 
-// ===============================
-// ADMIN PROTECTED ROUTE
-// ===============================
-
-// Add property (ONLY admin)
-router.post("/", protect, adminOnly, addProperty);
+// Admin actions
+router.patch('/:id/status', protect, admin, updatePropertyStatus);
+router.patch('/:id/feature', protect, admin, toggleFeatured);
 
 export default router;

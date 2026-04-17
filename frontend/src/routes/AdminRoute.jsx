@@ -1,14 +1,27 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet } from 'react-router-dom';
+import useAuthStore from '../store/authStore';
+import Spinner from '../components/common/Spinner';
 
 const AdminRoute = () => {
-  const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user"));
+  const { user, isLoading } = useAuthStore();
 
-  if (!token) return <Navigate to="/login" />;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
 
-  return user?.role === "admin"
-    ? <Outlet />
-    : <Navigate to="/" />;
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: window.location.pathname }} />;
+  }
+
+  if (user.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
 };
 
 export default AdminRoute;

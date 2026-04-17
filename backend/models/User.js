@@ -1,37 +1,74 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
-const userSchema = new mongoose.Schema(
+const userSchema = mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
-      trim: true,
     },
-
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
     },
-
     password: {
       type: String,
       required: true,
-      minlength: 6,
     },
-
     role: {
       type: String,
-      enum: ["admin", "agent", "user"],
-      default: "user",
+      enum: ['user', 'agent', 'admin'],
+      default: 'user',
     },
+    phone: {
+      type: String,
+    },
+    avatar: {
+      type: String,
+      default: '',
+    },
+    // Agent specific fields
+    agencyName: {
+      type: String,
+      default: '',
+    },
+    licenseNumber: {
+      type: String,
+      default: '',
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    // Wishlist - array of property IDs
+    wishlist: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Property',
+      },
+    ],
   },
   {
     timestamps: true,
   }
 );
 
-const User = mongoose.model("User", userSchema);
+// Match password method
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
 
+// ✅ Correct pre-save middleware – async function, no 'next' parameter
+userSchema.pre('save', async function () {
+  // Only hash password if it has been modified
+  if (!this.isModified('password')) {
+    return;
+  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+const User = mongoose.model('User', userSchema);
 export default User;

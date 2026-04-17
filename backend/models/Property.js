@@ -1,82 +1,98 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const propertySchema = new mongoose.Schema(
+const propertySchema = mongoose.Schema(
   {
     title: {
       type: String,
       required: true,
       trim: true,
     },
-
     description: {
       type: String,
       required: true,
     },
-
     price: {
       type: Number,
       required: true,
     },
-
-    location: {
+    address: {
       type: String,
       required: true,
     },
-
+    city: {
+      type: String,
+      required: true,
+    },
+    state: {
+      type: String,
+      default: '',
+    },
+    zipCode: {
+      type: String,
+      default: '',
+    },
     bedrooms: {
       type: Number,
       required: true,
     },
-
     bathrooms: {
       type: Number,
       required: true,
     },
-
     area: {
-      type: Number, // in sq ft
+      type: Number,
       required: true,
     },
-
+    propertyType: {
+      type: String,
+      enum: ['Apartment', 'House', 'Villa', 'Office', 'Land', 'Condo'],
+      required: true,
+    },
+    listingType: {
+      type: String,
+      enum: ['Sale', 'Rent'],
+      required: true,
+    },
     status: {
       type: String,
-      enum: ["sale", "rent"],
-      required: true,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending',
     },
-
+    featured: {
+      type: Boolean,
+      default: false,
+    },
+    hot: {
+      type: Boolean,
+      default: false,
+    },
     images: [
       {
         type: String,
+        required: true,
       },
     ],
-
-    createdBy: {
+    owner: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
       required: true,
+      ref: 'User',
     },
-
-    contactName: {
-  type: String,
-  required: true,
-},
-
-contactPhone: {
-  type: String,
-  required: true,
-},
-
-contactEmail: {
-  type: String,
-  required: true,
-},
-
+    views: {
+      type: Number,
+      default: 0,
+    },
+    inquiries: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const Property = mongoose.model("Property", propertySchema);
+// Index for search performance
+propertySchema.index({ city: 1, price: 1, bedrooms: 1, listingType: 1 });
 
+const Property = mongoose.model('Property', propertySchema);
 export default Property;
