@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../services/api';
-import PropertyCard from '../components/property/PropertyCard';
-import PropertyFilter from '../components/property/PropertyFilter';
+import PropertyCard from '../components/property-temp/PropertyCard';
+import PropertyFilter from '../components/property-temp/PropertyFilter';
 import Spinner from '../components/common/Spinner';
 import PageWrapper from '../components/common/PageWrapper';
 

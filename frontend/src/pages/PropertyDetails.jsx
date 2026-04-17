@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from "react-toastify";
 import api from '../services/api';
 import useAuthStore from '../store/authStore';
-import ImageGallery from '../components/property/ImageGallery';
+import ImageGallery from '../components/property-temp/ImageGallery';
 import Spinner from '../components/common/Spinner';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';

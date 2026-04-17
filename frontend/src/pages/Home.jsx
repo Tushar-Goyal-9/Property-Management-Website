@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import useAuthStore from '../store/authStore';
-import PropertyCard from '../components/property/PropertyCard';
+import PropertyCard from '../components/property-temp/PropertyCard';
 import Spinner from '../components/common/Spinner';
 import PageWrapper from '../components/common/PageWrapper';
 
