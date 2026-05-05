@@ -15,6 +15,10 @@ const Login = () => {
   const redirect = location.state?.from?.pathname || '/';
   const message = location.state?.message;
 
+      useEffect(() => {
+    clearError();
+  }, [clearError]);
+  
   useEffect(() => {
     if (user) {
       navigate(redirect, { replace: true });

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import useAuthStore from '../store/authStore';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
@@ -21,6 +22,10 @@ const Register = () => {
     licenseNumber: '',
   });
   const [validationError, setValidationError] = useState('');
+
+   useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   const handleChange = (e) => {
     clearError();

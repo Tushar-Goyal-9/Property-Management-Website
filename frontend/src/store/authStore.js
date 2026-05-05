@@ -6,15 +6,15 @@ const useAuthStore = create((set) => ({
   isLoading: true, // Start with true
   error: null,
 
-  checkAuth: async () => {
-    try {
-      const { data } = await api.get('/auth/me');
-      set({ user: data, isLoading: false });
-    } catch (error) {
-      // If unauthorized, user stays null, but loading stops
-      set({ user: null, isLoading: false ,error: error.message});
-    }
-  },
+checkAuth: async () => {
+  try {
+    const { data } = await api.get('/auth/me');
+    set({ user: data, isLoading: false });
+  } catch {
+    // Normal for guests – don't set a global error
+    set({ user: null, isLoading: false });
+  }
+},
 
   login: async (email, password) => {
     try {
