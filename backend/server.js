@@ -4,12 +4,15 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import connectDB from './config/db.js';
 
+
 // Import routes
 import authRoutes from './routes/authRoutes.js';
 import propertyRoutes from './routes/propertyRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import inquiryRoutes from './routes/inquiryRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
+import aiRoutes from "./routes/aiRoutes.js";
+
 
 // Import error middleware
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
@@ -38,6 +41,7 @@ app.use('/api/v1/properties', propertyRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/inquiries', inquiryRoutes);
 app.use('/api/v1/upload', uploadRoutes);
+app.use("/api/chat", aiRoutes);
 
 // Error handling
 app.use(notFound);

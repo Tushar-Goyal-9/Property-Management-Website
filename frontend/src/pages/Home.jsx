@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate} from 'react-router-dom';
 import api from '../services/api';
 import useAuthStore from '../store/authStore';
 import PropertyCard from '../components/property/PropertyCard';
@@ -8,7 +8,7 @@ import PageWrapper from '../components/common/PageWrapper';
 
 const Home = () => {
   const { user } = useAuthStore();
-  
+  const navigate = useNavigate();
   const [featuredProperties, setFeaturedProperties] = useState([]);
   const [hotProperties, setHotProperties] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,10 +37,10 @@ const Home = () => {
   };
 
   const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    const params = new URLSearchParams(searchQuery).toString();
-    window.location.href = `/properties?${params}`;
-  };
+  e.preventDefault();
+  const params = new URLSearchParams(searchQuery).toString();
+  navigate(`/properties?${params}`);   // ← this replaces window.location.href
+};
 
   if (loading) return <Spinner />;
 

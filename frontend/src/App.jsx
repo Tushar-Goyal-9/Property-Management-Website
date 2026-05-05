@@ -7,6 +7,9 @@ import useAuthStore from './store/authStore';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 
+// Chatbot
+import Chatbot from './components/Chatbot';
+
 // Route Guards
 import ProtectedRoute from './routes/ProtectedRoute';
 import AdminRoute from './routes/AdminRoute';
@@ -81,6 +84,7 @@ function App() {
         </AnimatePresence>
       </main>
       <Footer />
+      <Chatbot />
     </div>
   );
 }
