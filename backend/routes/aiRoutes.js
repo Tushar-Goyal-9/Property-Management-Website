@@ -1,6 +1,8 @@
 import express from "express";
 import OpenAI from "openai";
 import Property from "../models/Property.js";
+import { protect } from "../middleware/authMiddleware.js";
+import { aiLimiter } from '../middleware/rateLimitMiddleware.js';
 
 const router = express.Router();
 
@@ -11,7 +13,7 @@ const client = new OpenAI({
 
 const bannedWords = ["abuse", "hate", "kill", "sex"];
 
-router.post("/", async (req, res) => {
+router.post("/", protect, aiLimiter, async (req, res) => {
   try {
     const { message } = req.body;
 

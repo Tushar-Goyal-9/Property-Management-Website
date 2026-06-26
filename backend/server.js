@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
+import helmet from 'helmet';
 
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -24,13 +25,15 @@ connectDB();
 
 const app = express();
 
-// ✅ CORS configuration - CRITICAL FIX
+// ✅ CORS configuration 
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:5174', 'https://property-dunia.vercel.app', 'https://gadgetsdunia.com', 'https://www.gadgetsdunia.com'], // Frontend URLs
   credentials: true,               // Allow cookies
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+app.use(helmet());
 
 // Body parsers
 app.use(express.json());
