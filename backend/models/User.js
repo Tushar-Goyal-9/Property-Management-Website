@@ -49,6 +49,10 @@ const userSchema = mongoose.Schema(
         ref: 'Property',
       },
     ],
+
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+    
   },
   {
     timestamps: true,
