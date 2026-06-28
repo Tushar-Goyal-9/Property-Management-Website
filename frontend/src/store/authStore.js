@@ -25,9 +25,20 @@ checkAuth: async () => {
       set({ user: data, error: null });
       return { success: true };
     } catch (error) {
-      set({ error: error.response?.data?.message || 'Login failed' });
-      return { success: false, error: error.response?.data?.message };
-    }
+  const data = error.response?.data;
+
+  const errorMessage =
+    data?.errors?.[0]?.msg ||
+    data?.message ||
+    "Login failed";
+
+  set({ error: errorMessage });
+
+  return {
+    success: false,
+    error: errorMessage,
+  };
+}
   },
 
     register: async (userData) => {
@@ -39,9 +50,20 @@ checkAuth: async () => {
       set({ user: data, error: null });
       return { success: true };
     } catch (error) {
-      set({ error: error.response?.data?.message || 'Registration failed' });
-      return { success: false, error: error.response?.data?.message };
-    }
+  const data = error.response?.data;
+
+  const errorMessage =
+    data?.errors?.[0]?.msg ||
+    data?.message ||
+    "Registration failed";
+
+  set({ error: errorMessage });
+
+  return {
+    success: false,
+    error: errorMessage,
+  };
+}
   },
 
 

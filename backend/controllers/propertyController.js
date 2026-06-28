@@ -115,14 +115,12 @@ else {
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    // ✅ DEBUG: Log the final query object
-    console.log('getProperties query:', JSON.stringify(queryObj));
-
     const properties = await Property.find(queryObj)
       .populate('owner', 'name email avatar agencyName phone')
       .sort(sortOptions)
       .limit(limitNum)
-      .skip(skip);
+      .skip(skip)
+      .lean();
 
     const total = await Property.countDocuments(queryObj);
 
@@ -154,8 +152,12 @@ export const getPropertyById = async (req, res) => {
     }
 
     // Increment view count
-    property.views = (property.views || 0) + 1;
-    await property.save();
+    await Property.findByIdAndUpdate(
+    req.params.id,
+    {
+        $inc: { views: 1 }
+    }
+);
 
     res.json(property);
   } catch (error) {
@@ -168,7 +170,6 @@ export const getPropertyById = async (req, res) => {
 // @route   POST /api/v1/properties
 // @access  Private (Agent/Admin)
 export const createProperty = async (req, res) => {
-   console.log('Create property request body:', req.body);
   try {
     const {
       title,
@@ -187,11 +188,7 @@ export const createProperty = async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!title || !description || !price || !address || !city || !bedrooms || !bathrooms || !area || !propertyType || !listingType) {
-      res.status(400);
-      throw new Error('Please provide all required fields');
-    }
-
+    // Done through express-validator 
     if (!images || images.length === 0) {
       res.status(400);
       throw new Error('Please upload at least one image');
@@ -258,14 +255,14 @@ export const updateProperty = async (req, res) => {
 
     property.title = title || property.title;
     property.description = description || property.description;
-    property.price = price || property.price;
+    property.price = price ?? property.price;
     property.address = address || property.address;
     property.city = city || property.city;
     property.state = state !== undefined ? state : property.state;
     property.zipCode = zipCode !== undefined ? zipCode : property.zipCode;
-    property.bedrooms = bedrooms || property.bedrooms;
-    property.bathrooms = bathrooms || property.bathrooms;
-    property.area = area || property.area;
+    property.bedrooms = bedrooms ?? property.bedrooms;
+    property.bathrooms = bathrooms ?? property.bathrooms;
+    property.area = area ?? property.area;
     property.propertyType = propertyType || property.propertyType;
     property.listingType = listingType || property.listingType;
     if (images && images.length > 0) {
