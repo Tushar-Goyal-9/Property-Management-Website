@@ -16,7 +16,7 @@ const generateToken = (id) => {
 export const registerUser = async (req, res) => {
   console.log('Register attempt:', req.body);
   try {
-    const { name, email, password, role, phone, agencyName, licenseNumber } = req.body;
+    const { name, email, password, phone } = req.body;
 
     const userExists = await User.findOne({ email });
 
@@ -29,10 +29,10 @@ export const registerUser = async (req, res) => {
       name,
       email,
       password,
-      role: role || 'user',
+      role: 'user',
       phone,
-      agencyName: role === 'agent' ? agencyName : '',
-      licenseNumber: role === 'agent' ? licenseNumber : '',
+      agencyName: '',
+      licenseNumber: '',
     });
 
     if (user) {

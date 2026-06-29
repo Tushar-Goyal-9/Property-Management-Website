@@ -42,6 +42,30 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    // Agent approval workflow
+agentRequest: {
+  status: {
+    type: String,
+    enum: ['none', 'pending', 'approved', 'rejected'],
+    default: 'none',
+  },
+  requestedAt: {
+    type: Date,
+  },
+  reviewedAt: {
+    type: Date,
+  },
+  reviewedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  rejectionReason: {
+    type: String,
+    default: '',
+  },
+},
+
     // Wishlist - array of property IDs
     wishlist: [
       {

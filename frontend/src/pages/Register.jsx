@@ -1,11 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { ShieldCheck, Home } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
 import PageWrapper from '../components/common/PageWrapper';
-
 
 const Register = () => {
   const navigate = useNavigate();
@@ -16,14 +15,11 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'user',
     phone: '',
-    agencyName: '',
-    licenseNumber: '',
   });
   const [validationError, setValidationError] = useState('');
 
-   useEffect(() => {
+  useEffect(() => {
     clearError();
   }, [clearError]);
 
@@ -40,7 +36,12 @@ const Register = () => {
       return;
     }
     setLoading(true);
-    const result = await register(formData);
+    const result = await register({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
+    });
     setLoading(false);
     if (result.success) {
       navigate('/');
@@ -49,97 +50,108 @@ const Register = () => {
 
   return (
     <PageWrapper>
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
-          Create an Account
-        </h2>
-        {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4">{error}</div>}
-        {validationError && <div className="bg-red-50 text-red-600 p-3 rounded mb-4">{validationError}</div>}
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Full Name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            label="Email"
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            label="Phone"
-            type="tel"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-          />
-          <Input
-            label="Password"
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            label="Confirm Password"
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-          />
+      <div 
+        className="relative min-h-[calc(100vh-64px)] flex items-center justify-center py-16 px-4 bg-cover bg-center"
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1600&q=80')" }}
+      >
+        {/* Dark luxury glass overlay */}
+        <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-[2px] pointer-events-none" />
+
+        {/* Centered Glass Form Card */}
+        <div className="relative z-10 w-full max-w-lg bg-white/95 backdrop-blur-xl border border-white/20 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/45 space-y-6">
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Register as</label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-teal-500 focus:border-teal-500"
-            >
-              <option value="user">Buyer / Renter</option>
-              <option value="agent">Property Agent</option>
-            </select>
+          <div className="text-center space-y-2">
+            <div className="h-10 w-10 bg-teal-50 border border-teal-100 text-teal-600 rounded-xl flex items-center justify-center mx-auto shadow-sm">
+              <Home size={18} />
+            </div>
+            <div className="space-y-1 pt-1">
+              <h2 className="font-outfit text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Create Account
+              </h2>
+              <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-1">
+                <ShieldCheck size={12} className="text-teal-600" />
+                Join the Directory
+              </p>
+            </div>
           </div>
 
-          {formData.role === 'agent' && (
-            <>
-              <Input
-                label="Agency Name"
-                name="agencyName"
-                value={formData.agencyName}
-                onChange={handleChange}
-              />
-              <Input
-                label="License Number"
-                name="licenseNumber"
-                value={formData.licenseNumber}
-                onChange={handleChange}
-              />
-            </>
+          {error && (
+            <div className="bg-rose-50/50 border border-rose-100 text-rose-700 text-xs font-semibold p-3.5 rounded-xl text-center">
+              {error}
+            </div>
+          )}
+          {validationError && (
+            <div className="bg-rose-50/50 border border-rose-100 text-rose-700 text-xs font-semibold p-3.5 rounded-xl text-center">
+              {validationError}
+            </div>
           )}
 
-          <Button type="submit" isLoading={loading} className="w-full">
-            Register
-          </Button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-1">
+            <Input
+              label="Full Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              placeholder="Enter name"
+            />
+            <Input
+              label="Email Address"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="you@example.com"
+            />
+            <Input
+              label="Phone Number"
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Enter phone"
+            />
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+              <Input
+                label="Password"
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                placeholder="••••••••"
+              />
+              <Input
+                label="Confirm Password"
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                placeholder="••••••••"
+              />
+            </div>
 
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link to="/login" className="text-teal-600 hover:underline">
-            Sign in
-          </Link>
-        </p>
+            <div className="pt-4">
+              <Button type="submit" isLoading={loading} className="w-full">
+                Create Account
+              </Button>
+            </div>
+          </form>
+
+          <div className="pt-4 border-t border-slate-100 text-center text-xs">
+            <p className="text-slate-400 font-semibold">
+              Already registered?{' '}
+              <Link to="/login" className="text-teal-600 hover:text-teal-700 font-extrabold ml-1">
+                Sign in
+              </Link>
+            </p>
+          </div>
+
+        </div>
       </div>
-    </div>
     </PageWrapper>
   );
 };

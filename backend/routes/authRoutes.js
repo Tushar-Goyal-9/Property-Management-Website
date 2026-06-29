@@ -33,21 +33,6 @@ router.post(
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters"),
 
-  body("role")
-    .optional()
-    .isIn(["user", "agent"])
-    .withMessage("Invalid role"),
-
-  body("agencyName")
-    .if(body("role").equals("agent"))
-    .notEmpty()
-    .withMessage("Agency name is required"),
-
-  body("licenseNumber")
-    .if(body("role").equals("agent"))
-    .notEmpty()
-    .withMessage("License number is required"),
-
   validate,
 
   registerUser

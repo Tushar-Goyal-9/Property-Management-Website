@@ -1,10 +1,18 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { UploadCloud, X, Film, Image as ImageIcon } from 'lucide-react';
 import api from '../../services/api';
 
-const ImageUpload = ({ onUpload, multiple = true, maxFiles = 5 }) => {
+const ImageUpload = ({ onUpload, initialImages = [], multiple = true, maxFiles = 5 }) => {
   const [uploading, setUploading] = useState(false);
   const [images, setImages] = useState([]);
   const fileInputRef = useRef(null);
+
+  // Sync with initialImages when they load (e.g. on EditProperty fetch)
+  useEffect(() => {
+    if (initialImages && initialImages.length > 0) {
+      setImages(initialImages);
+    }
+  }, [initialImages]);
 
   const uploadToCloudinary = async (file) => {
     // Get signature from backend
@@ -59,9 +67,12 @@ const ImageUpload = ({ onUpload, multiple = true, maxFiles = 5 }) => {
 
   return (
     <div className="space-y-4">
+      {/* Upload Box */}
       <div
-        onClick={() => fileInputRef.current.click()}
-        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-teal-500 transition-colors"
+        onClick={() => !uploading && fileInputRef.current.click()}
+        className={`border-2 border-dashed border-slate-200 hover:border-teal-500 rounded-2xl p-8 text-center cursor-pointer transition-all bg-slate-50/50 hover:bg-teal-50/5 ${
+          uploading ? 'opacity-60 pointer-events-none' : ''
+        }`}
       >
         <input
           type="file"
@@ -71,33 +82,45 @@ const ImageUpload = ({ onUpload, multiple = true, maxFiles = 5 }) => {
           accept="image/*"
           className="hidden"
         />
-        <div className="text-gray-500">
-          {uploading ? (
-            <span>Uploading...</span>
-          ) : (
-            <>
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <p className="mt-2">Click to upload or drag and drop</p>
-              <p className="text-xs">PNG, JPG up to 10MB (Max {maxFiles} images)</p>
-            </>
-          )}
+        
+        <div className="space-y-3">
+          <div className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center mx-auto text-slate-400">
+            <UploadCloud size={20} strokeWidth={1.5} />
+          </div>
+          <div className="text-xs font-semibold text-slate-500">
+            {uploading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="animate-spin rounded-full h-3 w-3 border-b border-teal-600" />
+                Uploading assets to media storage...
+              </span>
+            ) : (
+              <>
+                <p className="text-slate-800 font-bold">Select property photos to upload</p>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wider mt-1">
+                  PNG, JPG up to 10MB (Max {maxFiles} images)
+                </p>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Thumbnails grid */}
       {images.length > 0 && (
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
           {images.map((url, index) => (
-            <div key={index} className="relative">
-              <img src={url} alt={`Upload ${index}`} className="h-20 w-full object-cover rounded" />
+            <div key={index} className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 group shadow-sm">
+              <img src={url} alt={`Upload ${index + 1}`} className="h-full w-full object-cover" />
               <button
-                onClick={() => removeImage(index)}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeImage(index);
+                }}
+                className="absolute top-1.5 right-1.5 h-6 w-6 bg-slate-900/60 hover:bg-rose-600 backdrop-blur-sm text-white rounded-lg flex items-center justify-center transition-colors shadow-md"
+                title="Remove image"
               >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <X size={12} />
               </button>
             </div>
           ))}

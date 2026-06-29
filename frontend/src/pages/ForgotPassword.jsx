@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ShieldCheck, Mail } from 'lucide-react';
 import api from '../services/api';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
+import PageWrapper from '../components/common/PageWrapper';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -24,30 +26,58 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-900 mb-4">Forgot Password</h2>
-        <p className="text-gray-600 text-center mb-6">Enter your email and we'll send you a reset link.</p>
-        {message && <div className="bg-blue-50 text-blue-600 p-3 rounded mb-4">{message}</div>}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Email Address"
-            type="email"
-            name="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            required
-          />
-          <Button type="submit" isLoading={loading} className="w-full">
-            Send Reset Link
-          </Button>
-        </form>
-        <p className="mt-4 text-center text-sm text-gray-600">
-          <Link to="/login" className="text-teal-600 hover:underline">Back to Login</Link>
-        </p>
+    <PageWrapper>
+      <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-slate-50/50 p-6">
+        <div className="max-w-md w-full bg-white/70 backdrop-blur-md rounded-3xl border border-slate-200/80 p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-6">
+          
+          <div className="text-center space-y-1">
+            <h2 className="font-outfit text-2xl font-extrabold text-slate-900 tracking-tight">
+              Reset Password
+            </h2>
+            <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-1">
+              <ShieldCheck size={12} className="text-teal-600" />
+              Secure Identity Verification
+            </p>
+          </div>
+
+          <p className="text-slate-500 text-xs text-center leading-relaxed max-w-sm mx-auto">
+            Provide your email below and we will deliver a secure authentication link to reset your account credentials.
+          </p>
+
+          {message && (
+            <div className="bg-blue-50/50 border border-blue-100 text-blue-750 text-xs font-semibold p-3.5 rounded-xl text-center">
+              {message}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-1">
+            <Input
+              label="Email Address"
+              type="email"
+              name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
+
+            <div className="pt-3">
+              <Button type="submit" isLoading={loading} className="w-full flex items-center justify-center gap-2">
+                <Mail size={13} />
+                Send Reset Link
+              </Button>
+            </div>
+          </form>
+
+          <p className="pt-4 border-t border-slate-100 text-center text-xs">
+            <Link to="/login" className="text-teal-600 hover:text-teal-700 font-extrabold">
+              Back to Login
+            </Link>
+          </p>
+
+        </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 };
 
