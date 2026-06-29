@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom';
+import useAuthStore from '../../store/authStore';
 
 const Footer = () => {
+  const { user } = useAuthStore();
+
   return (
     <footer className="bg-slate-950 text-slate-400 mt-auto border-t border-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -21,11 +24,22 @@ const Footer = () => {
             </ul>
           </div>
           <div>
-            <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase mb-4">For Agents</h4>
-            <ul className="space-y-2.5 text-sm">
-              <li><Link to="/dashboard" className="hover:text-white transition-colors duration-150">Become an Agent</Link></li>
-              <li><Link to="/dashboard/agent" className="hover:text-white transition-colors duration-150">Agent Dashboard</Link></li>
-            </ul>
+            {user?.role === 'admin' ? (
+              <>
+                <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase mb-4">For Admins</h4>
+                <ul className="space-y-2.5 text-sm">
+                  <li><Link to="/dashboard/admin" className="hover:text-white transition-colors duration-150">Admin Dashboard</Link></li>
+                </ul>
+              </>
+            ) : (
+              <>
+                <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase mb-4">For Agents</h4>
+                <ul className="space-y-2.5 text-sm">
+                  <li><Link to="/dashboard" className="hover:text-white transition-colors duration-150">Become an Agent</Link></li>
+                  <li><Link to="/dashboard/agent" className="hover:text-white transition-colors duration-150">Agent Dashboard</Link></li>
+                </ul>
+              </>
+            )}
           </div>
           <div>
             <h4 className="text-xs font-bold tracking-wider text-slate-200 uppercase mb-4">Contact</h4>

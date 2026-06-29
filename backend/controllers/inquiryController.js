@@ -41,8 +41,8 @@ export const createInquiry = async (req, res) => {
 export const getMyInquiries = async (req, res) => {
   try {
     let inquiries;
-    if (req.user.role === 'agent') {
-      // Agents see inquiries for their properties
+    if (req.user.role === 'agent' || req.user.role === 'admin') {
+      // Agents and Admins see inquiries for their properties
       inquiries = await Inquiry.find({ agent: req.user._id })
         .populate('property', 'title images')
         .populate('user', 'name email')

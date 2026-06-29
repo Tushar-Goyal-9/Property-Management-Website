@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Clipboard, SlidersHorizontal, MapPin, Film, ArrowLeft, Sparkles, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
+import useAuthStore from '../../store/authStore';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import ImageUpload from '../../components/common/ImageUpload';
@@ -12,6 +13,7 @@ import PageWrapper from '../../components/common/PageWrapper';
 const EditProperty = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,6 +29,7 @@ const EditProperty = () => {
     propertyType: 'Apartment',
     listingType: 'Sale',
     visibility: 'public',
+    listingStatus: 'active',
   });
   const [images, setImages] = useState([]);
 
@@ -47,18 +50,19 @@ const EditProperty = () => {
           propertyType: data.propertyType,
           listingType: data.listingType,
           visibility: data.visibility || 'public',
+          listingStatus: data.listingStatus || 'active',
         });
         setImages(data.images || []);
       } catch (error) {
         console.error('Failed to fetch property:', error);
         toast.error('Failed to load property');
-        navigate('/dashboard/agent');
+        navigate(user?.role === 'admin' ? '/dashboard/admin' : '/dashboard/agent');
       } finally {
         setLoading(false);
       }
     };
     fetchProperty();
-  }, [id, navigate]);
+  }, [id, navigate, user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -74,7 +78,7 @@ const EditProperty = () => {
     try {
       await api.put(`/properties/${id}`, { ...formData, images });
       toast.success('Listing updated successfully!');
-      navigate('/dashboard/agent');
+      navigate(user?.role === 'admin' ? '/dashboard/admin' : '/dashboard/agent');
     } catch (error) {
       console.error('Failed to update property:', error);
       toast.error('Failed to update property');
@@ -95,7 +99,7 @@ const EditProperty = () => {
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="h-9 w-9 bg-white border border-slate-200 hover:border-slate-300 rounded-xl flex items-center justify-center text-slate-600 transition-colors"
+              className="h-9 w-9 bg-white border border-slate-200 hover:border-slate-350 rounded-xl flex items-center justify-center text-slate-600 transition-colors"
             >
               <ArrowLeft size={15} />
             </button>
@@ -176,19 +180,20 @@ const EditProperty = () => {
               </div>
             </div>
 
-            {/* Section 4: Visibility Section */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-4">
+            {/* Section 4: Visibility & Status Settings */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-5">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3 text-slate-800">
                 <Sparkles size={15} className="text-teal-600" />
-                <span className="font-outfit text-xs font-bold tracking-wide uppercase">4. Visibility Settings</span>
+                <span className="font-outfit text-xs font-bold tracking-wide uppercase">4. Visibility & Status Settings</span>
               </div>
 
+              {/* Visibility Options */}
               <div className="space-y-2">
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">Listing Visibility</label>
                 <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
                   Public properties are displayed in general search results. Private properties are restricted to you and root administrators.
                 </p>
-                <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="grid grid-cols-2 gap-3 pt-1">
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, visibility: 'public' })}
@@ -211,6 +216,36 @@ const EditProperty = () => {
                   >
                     <EyeOff size={14} /> Private Listing (🔒)
                   </button>
+                </div>
+              </div>
+
+              {/* Listing Status Options */}
+              <div className="space-y-2 pt-4 border-t border-slate-100">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">Listing Status</label>
+                <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
+                  Set the current transactional status of this property listing.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                  {[
+                    { value: 'active', label: 'Active', icon: '🟢' },
+                    { value: 'sold', label: 'Sold', icon: '🤝' },
+                    { value: 'rented', label: 'Rented', icon: '🔑' },
+                    { value: 'archived', label: 'Archived', icon: '📁' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, listingStatus: opt.value })}
+                      className={`flex items-center justify-center gap-1.5 py-3 px-2 rounded-xl border text-xs font-bold transition-all active:scale-[0.98] ${
+                        formData.listingStatus === opt.value
+                          ? 'bg-teal-50 border-teal-200 text-teal-700 shadow-sm'
+                          : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
+                      }`}
+                    >
+                      <span>{opt.icon}</span>
+                      <span>{opt.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>

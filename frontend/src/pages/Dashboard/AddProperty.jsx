@@ -25,6 +25,7 @@ const AddProperty = () => {
     propertyType: 'Apartment',
     listingType: 'Sale',
     visibility: 'public',
+    listingStatus: 'active',
   });
   const [images, setImages] = useState([]);
 
@@ -151,19 +152,20 @@ const AddProperty = () => {
               </div>
             </div>
 
-            {/* Section 4: Visibility Section */}
+            {/* Section 4: Visibility Settings */}
             <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-4">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3 text-slate-800">
                 <Sparkles size={15} className="text-teal-600" />
                 <span className="font-outfit text-xs font-bold tracking-wide uppercase">4. Visibility Settings</span>
               </div>
 
+              {/* Visibility Options */}
               <div className="space-y-2">
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">Listing Visibility</label>
                 <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
                   Public properties are displayed in general search results. Private properties are restricted to you and root administrators.
                 </p>
-                <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="grid grid-cols-2 gap-3 pt-1">
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, visibility: 'public' })}

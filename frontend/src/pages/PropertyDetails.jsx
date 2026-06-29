@@ -110,7 +110,7 @@ const PropertyDetails = () => {
       setInquiryForm({ ...inquiryForm, message: '' });
     } catch (error) {
       console.error('Failed to send inquiry:', error);
-      toast.error('Failed to send inquiry. Please try again.');
+      toast.error(error.response?.data?.message || error.response?.data?.errors?.[0]?.msg || 'Failed to send inquiry. Please try again.');
     } finally {
       setSubmitting(false);
     }

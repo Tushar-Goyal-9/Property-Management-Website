@@ -6,6 +6,8 @@ import {
   updateProperty,
   deleteProperty,
   toggleFeatured,
+  getDashboardStats,
+  getAdminDashboardStats,
 } from '../controllers/propertyController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 import { body } from "express-validator";
@@ -83,6 +85,16 @@ router.route("/")
 
 // ✅ ADD THIS (VERY IMPORTANT)
 router.get('/admin', protect, admin, getProperties);
+
+router.get(
+  '/admin/dashboard',
+  protect,
+  admin,
+  getAdminDashboardStats
+);
+
+// Agent/Admin dashboard stats
+router.get('/dashboard/stats', protect, getDashboardStats);
 
 // ❗ MUST BE AFTER /admin
 router.route('/:id')

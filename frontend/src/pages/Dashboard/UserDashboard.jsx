@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Inbox, Compass, ArrowRight, ShieldCheck, Calendar, User, UserPlus } from 'lucide-react';
+import { Heart, Inbox, Compass, ArrowRight, ShieldCheck, Calendar, User, UserPlus, Send, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
 import useAuthStore from '../../store/authStore';
@@ -12,6 +12,12 @@ const UserDashboard = () => {
   const [wishlist, setWishlist] = useState([]);
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Application request states
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [agencyName, setAgencyName] = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
+  const [submittingApply, setSubmittingApply] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,6 +36,42 @@ const UserDashboard = () => {
     };
     fetchData();
   }, []);
+
+  const handleApplyAgent = async (e) => {
+    e.preventDefault();
+    if (!agencyName.trim() || !licenseNumber.trim()) {
+      toast.error('Please enter agency name and license number');
+      return;
+    }
+    setSubmittingApply(true);
+    try {
+      const { data } = await api.post('/users/request-agent', {
+        agencyName: agencyName.trim(),
+        licenseNumber: licenseNumber.trim(),
+      });
+      toast.success(data.message || 'Access request submitted successfully!');
+      
+      // Update store user state locally so details update instantly
+      if (user) {
+        const updatedUser = {
+          ...user,
+          agentRequest: data.agentRequest || { status: 'pending' },
+          agencyName: agencyName.trim(),
+          licenseNumber: licenseNumber.trim()
+        };
+        useAuthStore.setState({ user: updatedUser });
+      }
+
+      setShowApplyModal(false);
+      setAgencyName('');
+      setLicenseNumber('');
+    } catch (error) {
+      console.error('Failed to submit agent request:', error);
+      toast.error(error.response?.data?.message || 'Failed to submit agent access request.');
+    } finally {
+      setSubmittingApply(false);
+    }
+  };
 
   if (loading) return <Spinner />;
 
@@ -70,20 +112,75 @@ const UserDashboard = () => {
               <div className="inline-flex items-center gap-1.5 bg-teal-50 border border-teal-100 text-teal-700 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
                 <UserPlus size={10} /> Partner Program
               </div>
-              <h2 className="font-outfit text-lg font-extrabold text-slate-900 tracking-tight">
-                Become a Verified Agent
-              </h2>
-              <p className="text-slate-500 text-xs font-semibold leading-relaxed">
-                Apply for agent access to list properties, manage listings, and grow your real estate business. Applications are reviewed by our administrators.
-              </p>
+              
+              {user?.role === 'agent' ? (
+                <>
+                  <h2 className="font-outfit text-lg font-extrabold text-slate-900 tracking-tight">
+                    Verified Agent Clearance Active
+                  </h2>
+                  <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                    You have complete clearance to list property inventories, manage active listings, and respond to buyer inquiries.
+                  </p>
+                </>
+              ) : user?.agentRequest?.status === 'pending' ? (
+                <>
+                  <h2 className="font-outfit text-lg font-extrabold text-slate-900 tracking-tight">
+                    Agent Application Pending
+                  </h2>
+                  <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                    Your request for broker partner access is currently being reviewed by root administrators. We will verify your license details shortly.
+                  </p>
+                </>
+              ) : user?.agentRequest?.status === 'rejected' ? (
+                <>
+                  <h2 className="font-outfit text-lg font-extrabold text-slate-900 tracking-tight">
+                    Agent Application Declined
+                  </h2>
+                  <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                    Your request was declined. <strong className="text-rose-600 block mt-1">Declined Reason: "{user.agentRequest.rejectionReason || 'Details mismatch'}"</strong>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="font-outfit text-lg font-extrabold text-slate-900 tracking-tight">
+                    Become a Verified Agent
+                  </h2>
+                  <p className="text-slate-500 text-xs font-semibold leading-relaxed">
+                    Apply for agent access to list properties, manage listings, and grow your real estate business. Applications are reviewed by our administrators.
+                  </p>
+                </>
+              )}
             </div>
 
-            <button
-              onClick={() => toast.info("Agent application feature is coming soon!")}
-              className="relative z-10 bg-slate-950 hover:bg-slate-900 active:scale-95 text-white font-bold text-xs px-6 py-3.5 rounded-xl transition-all shadow-md shrink-0 flex items-center gap-1.5"
-            >
-              Request Agent Access
-            </button>
+            {user?.role === 'agent' ? (
+              <Link
+                to="/dashboard/agent"
+                className="relative z-10 bg-teal-650 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-bold text-xs px-6 py-3.5 rounded-xl transition-all shadow-md shrink-0"
+              >
+                Go to Agent Console
+              </Link>
+            ) : user?.agentRequest?.status === 'pending' ? (
+              <button
+                disabled
+                className="relative z-10 bg-slate-100 text-slate-400 font-bold text-xs px-6 py-3.5 rounded-xl shrink-0 cursor-not-allowed border border-slate-200"
+              >
+                Pending Admin Review
+              </button>
+            ) : user?.agentRequest?.status === 'rejected' ? (
+              <button
+                onClick={() => setShowApplyModal(true)}
+                className="relative z-10 bg-rose-650 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs px-6 py-3.5 rounded-xl transition-all shadow-md shrink-0"
+              >
+                Re-apply for Access
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowApplyModal(true)}
+                className="relative z-10 bg-slate-950 hover:bg-slate-900 active:scale-95 text-white font-bold text-xs px-6 py-3.5 rounded-xl transition-all shadow-md shrink-0 flex items-center gap-1.5"
+              >
+                Request Agent Access
+              </button>
+            )}
           </div>
 
           {/* Grid panel cards */}
@@ -181,6 +278,68 @@ const UserDashboard = () => {
 
         </div>
       </div>
+
+      {/* Request agent access Modal */}
+      {showApplyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <form onSubmit={handleApplyAgent} className="bg-white rounded-3xl border border-slate-200 p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150 relative">
+            <button
+              type="button"
+              onClick={() => setShowApplyModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X size={16} />
+            </button>
+
+            <h4 className="font-outfit text-base font-extrabold text-slate-900">Request Broker Clearance</h4>
+            <p className="text-xs text-slate-400 font-semibold leading-relaxed">
+              Submit your corporate registration details below to apply for Verified Agent clearance.
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Agency Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Dream Realty Services"
+                  value={agencyName}
+                  onChange={(e) => setAgencyName(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-teal-500 bg-slate-50/50 text-slate-700 font-semibold"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">License Number</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. RE-9975412"
+                  value={licenseNumber}
+                  onChange={(e) => setLicenseNumber(e.target.value)}
+                  className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl outline-none focus:border-teal-500 bg-slate-50/50 text-slate-700 font-semibold"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowApplyModal(false)}
+                className="px-4 py-2 bg-slate-150 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl active:scale-95 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submittingApply}
+                className="px-4 py-2 bg-slate-950 hover:bg-slate-900 disabled:opacity-50 text-white text-xs font-bold rounded-xl active:scale-95 transition-all flex items-center gap-1.5"
+              >
+                {submittingApply ? 'Submitting...' : 'Submit Request'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </PageWrapper>
   );
 };

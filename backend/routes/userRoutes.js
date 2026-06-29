@@ -12,6 +12,7 @@ import {
   getPendingAgentRequests,
   approveAgentRequest,
   rejectAgentRequest,
+  revokeAgentStatus,
 } from '../controllers/userController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 import { body } from "express-validator";
@@ -45,12 +46,6 @@ router.route('/')
   requestAgentAccess
 );
 
-router.get(
-  "/agent-requests",
-  protect,
-  admin,
-  getPendingAgentRequests
-);
 
 // Admin gets pending agent requests
 router.get(
@@ -84,6 +79,12 @@ router.patch(
   rejectAgentRequest
 );
 
+router.patch(
+  "/:id/revoke-agent",
+  protect,
+  admin,
+  revokeAgentStatus
+);
 
   // Wishlist routes (authenticated users)
 router.route('/wishlist')

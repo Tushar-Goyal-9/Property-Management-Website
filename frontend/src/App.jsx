@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';  // ✅ Added useLocation
 import { AnimatePresence } from 'framer-motion';                 // ✅ Added AnimatePresence
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import useAuthStore from './store/authStore';
 
 // Layout Components
@@ -89,6 +91,7 @@ function App() {
       </main>
       <Footer />
       <Chatbot />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} closeOnClick pauseOnHover />
     </div>
   );
 }

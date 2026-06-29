@@ -21,4 +21,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// ✅ Intercept and format validation errors for a premium user experience
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.data) {
+      const data = error.response.data;
+      if (Array.isArray(data.errors) && data.errors.length > 0) {
+        const validationMessages = data.errors.map(err => err.msg).join('\n');
+        data.message = validationMessages;
+        data.errors = [{ msg: validationMessages }];
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

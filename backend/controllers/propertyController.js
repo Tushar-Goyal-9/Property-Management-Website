@@ -420,3 +420,132 @@ export const getPropertyCount = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Get dashboard stats for logged in agent
+// @route   GET /api/v1/properties/dashboard/stats
+// @access  Private (Agent/Admin)
+export const getDashboardStats = async (req, res) => {
+  try {
+    const owner = req.user._id;
+
+    const properties = await Property.find({ owner });
+
+    const stats = {
+      totalProperties: properties.length,
+      public: 0,
+      private: 0,
+      active: 0,
+      sold: 0,
+      rented: 0,
+      archived: 0,
+      featured: 0,
+      hot: 0,
+      totalViews: 0,
+      totalInquiries: 0,
+    };
+
+    properties.forEach((property) => {
+      // Visibility
+      if (property.visibility === "public") stats.public++;
+      if (property.visibility === "private") stats.private++;
+
+      // Listing Status
+      if (property.listingStatus === "active") stats.active++;
+      if (property.listingStatus === "sold") stats.sold++;
+      if (property.listingStatus === "rented") stats.rented++;
+      if (property.listingStatus === "archived") stats.archived++;
+
+      // Flags
+      if (property.featured) stats.featured++;
+      if (property.hot) stats.hot++;
+
+      // Totals
+      stats.totalViews += property.views || 0;
+      stats.totalInquiries += property.inquiries || 0;      
+     });
+
+    res.json(stats);
+  } catch (error) {
+    console.error("Error in getDashboardStats:", error);
+
+    res.status(res.statusCode === 200 ? 500 : res.statusCode).json({
+      message: error.message,
+    });
+  }
+};
+
+// @desc    Get platform dashboard stats
+// @route   GET /api/v1/admin/dashboard
+// @access  Private/Admin
+export const getAdminDashboardStats = async (req, res) => {
+  try {
+    // ---------- USERS ----------
+    const totalUsers = await User.countDocuments();
+    const totalAdmins = await User.countDocuments({ role: "admin" });
+    const totalAgents = await User.countDocuments({ role: "agent" });
+    const totalNormalUsers = await User.countDocuments({ role: "user" });
+
+    const pendingAgentRequests = await User.countDocuments({
+      "agentRequest.status": "pending",
+    });
+
+    // ---------- PROPERTIES ----------
+    const properties = await Property.find();
+
+    const stats = {
+      users: {
+        total: totalUsers,
+        admins: totalAdmins,
+        agents: totalAgents,
+        users: totalNormalUsers,
+        pendingAgentRequests,
+      },
+
+      properties: {
+        total: properties.length,
+
+        public: 0,
+        private: 0,
+
+        active: 0,
+        sold: 0,
+        rented: 0,
+        archived: 0,
+
+        featured: 0,
+        hot: 0,
+
+        totalViews: 0,
+        totalInquiries: 0,
+      },
+    };
+
+    properties.forEach((property) => {
+      // Visibility
+      if (property.visibility === "public") stats.properties.public++;
+      if (property.visibility === "private") stats.properties.private++;
+
+      // Listing Status
+      if (property.listingStatus === "active") stats.properties.active++;
+      if (property.listingStatus === "sold") stats.properties.sold++;
+      if (property.listingStatus === "rented") stats.properties.rented++;
+      if (property.listingStatus === "archived") stats.properties.archived++;
+
+      // Flags
+      if (property.featured) stats.properties.featured++;
+      if (property.hot) stats.properties.hot++;
+
+      // Totals
+      stats.properties.totalViews += property.views || 0;
+      stats.properties.totalInquiries += property.inquiries || 0;
+    });
+
+    res.json(stats);
+  } catch (error) {
+    console.error("Error in getAdminDashboardStats:", error);
+
+    res.status(res.statusCode === 200 ? 500 : res.statusCode).json({
+      message: error.message,
+    });
+  }
+};

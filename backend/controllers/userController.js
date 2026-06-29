@@ -347,3 +347,45 @@ export const rejectAgentRequest = async (req, res) => {
     });
   }
 };
+
+// @desc    Revoke agent status
+// @route   PATCH /api/v1/users/:id/revoke-agent
+// @access  Private/Admin
+export const revokeAgentStatus = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+
+    if (user.role !== "agent") {
+      res.status(400);
+      throw new Error("User is not an agent.");
+    }
+
+    user.role = "user";
+    user.isVerified = false;
+
+    user.agentRequest.status = "none";
+    user.agentRequest.requestedAt = undefined;
+    user.agentRequest.reviewedAt = undefined;
+    user.agentRequest.reviewedBy = undefined;
+    user.agentRequest.rejectionReason = "";
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Agent status revoked successfully.",
+      role: user.role,
+      isVerified: user.isVerified,
+      agentRequest: user.agentRequest,
+    });
+
+  } catch (error) {
+    res.status(res.statusCode === 200 ? 500 : res.statusCode).json({
+      message: error.message,
+    });
+  }
+};
