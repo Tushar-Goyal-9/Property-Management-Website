@@ -158,3 +158,54 @@ export const getWishlist = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+// @desc    Request agent access
+// @route   POST /api/v1/users/request-agent
+// @access  Private
+export const requestAgentAccess = async (req, res) => {
+  try {
+    const { agencyName, licenseNumber } = req.body;
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+
+    // Already an approved agent
+    if (user.role === "agent") {
+      res.status(400);
+      throw new Error("You are already an agent.");
+    }
+
+    // Already waiting for approval
+    if (user.agentRequest?.status === "pending") {
+      res.status(400);
+      throw new Error("You already have a pending agent request.");
+    }
+
+    // Save latest application details
+    user.agencyName = agencyName;
+    user.licenseNumber = licenseNumber;
+
+    // Create / Update request
+    user.agentRequest.status = "pending";
+    user.agentRequest.requestedAt = new Date();
+    user.agentRequest.reviewedAt = undefined;
+    user.agentRequest.reviewedBy = undefined;
+    user.agentRequest.rejectionReason = "";
+
+    await user.save();
+
+    res.status(201).json({
+      message: "Agent access request submitted successfully.",
+      agentRequest: user.agentRequest,
+    });
+
+  } catch (error) {
+    res.status(res.statusCode === 200 ? 500 : res.statusCode).json({
+      message: error.message,
+    });
+  }
+};
