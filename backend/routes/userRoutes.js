@@ -9,6 +9,9 @@ import {
   removeFromWishlist,
   getWishlist,
   requestAgentAccess,
+  getPendingAgentRequests,
+  approveAgentRequest,
+  rejectAgentRequest,
 } from '../controllers/userController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 import { body } from "express-validator";
@@ -41,6 +44,46 @@ router.route('/')
 
   requestAgentAccess
 );
+
+router.get(
+  "/agent-requests",
+  protect,
+  admin,
+  getPendingAgentRequests
+);
+
+// Admin gets pending agent requests
+router.get(
+  "/agent-requests",
+  protect,
+  admin,
+  getPendingAgentRequests
+);
+
+// Admin approves an agent request
+router.patch(
+  "/agent-requests/:id/approve",
+  protect,
+  admin,
+  approveAgentRequest
+);
+
+router.patch(
+  "/agent-requests/:id/reject",
+
+  protect,
+  admin,
+
+  body("rejectionReason")
+    .trim()
+    .isLength({ min: 5, max: 500 })
+    .withMessage("Rejection reason must be between 5 and 500 characters"),
+
+  validate,
+
+  rejectAgentRequest
+);
+
 
   // Wishlist routes (authenticated users)
 router.route('/wishlist')

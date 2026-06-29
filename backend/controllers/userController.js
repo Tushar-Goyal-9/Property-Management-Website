@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import Property from '../models/Property.js';
+import sendEmail from "../utils/sendEmail.js";
 
 // @desc    Get all users (admin only)
 // @route   GET /api/v1/users
@@ -202,6 +203,139 @@ export const requestAgentAccess = async (req, res) => {
       message: "Agent access request submitted successfully.",
       agentRequest: user.agentRequest,
     });
+
+  } catch (error) {
+    res.status(res.statusCode === 200 ? 500 : res.statusCode).json({
+      message: error.message,
+    });
+  }
+};
+
+// @desc    Get pending agent requests
+// @route   GET /api/v1/users/agent-requests
+// @access  Private/Admin
+export const getPendingAgentRequests = async (req, res) => {
+  try {
+    const requests = await User.find({
+      "agentRequest.status": "pending",
+    }).select("name email phone role agencyName licenseNumber isVerified agentRequest createdAt");
+
+    res.status(200).json(requests);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+
+// @desc    Approve agent request
+// @route   PATCH /api/v1/users/agent-requests/:id/approve
+// @access  Private/Admin
+export const approveAgentRequest = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    // Check if user exists
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+
+    // Already an approved agent
+    if (user.role === "agent") {
+      res.status(400);
+      throw new Error("User is already an approved agent.");
+    }
+
+    // No pending request
+    if (user.agentRequest.status !== "pending") {
+      res.status(400);
+      throw new Error("No pending agent request found.");
+    }
+
+    // Approve request
+    user.role = "agent";
+    user.isVerified = true;
+
+    user.agentRequest.status = "approved";
+    user.agentRequest.reviewedAt = new Date();
+    user.agentRequest.reviewedBy = req.user._id;
+
+    await user.save();
+
+    await sendEmail({
+  to: user.email,
+  subject: "Agent Request Approved",
+  html: `
+    <h2>Congratulations ${user.name}!</h2>
+    <p>Your request to become an agent has been approved.</p>
+    <p>You can now log in and access your Agent Dashboard.</p>
+  `,
+});
+
+    res.status(200).json({
+  message: "Agent request approved successfully.",
+  role: user.role,
+  isVerified: user.isVerified,
+  agentRequest: user.agentRequest,
+});
+
+  } catch (error) {
+    res.status(res.statusCode === 200 ? 500 : res.statusCode).json({
+      message: error.message,
+    });
+  }
+};
+
+// @desc    Reject agent request
+// @route   PATCH /api/v1/users/agent-requests/:id/reject
+// @access  Private/Admin
+export const rejectAgentRequest = async (req, res) => {
+  try {
+    const { rejectionReason } = req.body;
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+
+    if (user.role === "agent") {
+      res.status(400);
+      throw new Error("Approved agents cannot be rejected.");
+    }
+
+    if (user.agentRequest.status !== "pending") {
+      res.status(400);
+      throw new Error("No pending agent request found.");
+    }
+
+    user.agentRequest.status = "rejected";
+    user.agentRequest.reviewedAt = new Date();
+    user.agentRequest.reviewedBy = req.user._id;
+    user.agentRequest.rejectionReason = rejectionReason;
+
+    await user.save();
+
+    await sendEmail({
+  to: user.email,
+  subject: "Agent Request Rejected",
+  html: `
+    <h2>Hello ${user.name},</h2>
+    <p>Your agent request has been reviewed.</p>
+    <p><strong>Reason:</strong> ${rejectionReason}</p>
+    <p>You may update your details and submit another request.</p>
+  `,
+});
+
+    res.status(200).json({
+  message: "Agent request rejected successfully.",
+  role: user.role,
+  isVerified: user.isVerified,
+  agentRequest: user.agentRequest,
+});
 
   } catch (error) {
     res.status(res.statusCode === 200 ? 500 : res.statusCode).json({
