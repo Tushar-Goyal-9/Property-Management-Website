@@ -201,6 +201,14 @@ const AgentDashboard = () => {
                                 <span className="capitalize">{property.status || 'pending'}</span>
                               </span>
                               
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md ${
+                                property.visibility === 'private'
+                                  ? 'bg-slate-100 text-slate-600 border border-slate-200'
+                                  : 'bg-teal-50 text-teal-700 border border-teal-100/50'
+                              }`}>
+                                <span>{property.visibility === 'private' ? '🔒 Private' : '🌍 Public'}</span>
+                              </span>
+                              
                               <span className="text-slate-300">|</span>
                               <span>Views: {property.views || 0}</span>
                               <span className="text-slate-300">|</span>

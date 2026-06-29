@@ -53,8 +53,11 @@ else if (req.user?.role === 'admin') {
 }
 
 // ✅ EVERYONE ELSE (IMPORTANT FIX)
+// Public users
 else {
   queryObj.status = 'approved';
+  queryObj.visibility = 'public';
+  queryObj.listingStatus = "active";
 }
     // Keyword search
     if (keyword) {
@@ -141,6 +144,19 @@ else {
 // @access  Public
 export const getPropertyById = async (req, res) => {
   try {
+    // Optional token check for owner/admin access
+if (!req.user) {
+  const token = req.cookies.token;
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select("-password");
+    } catch (error) {
+      // Invalid token – ignore, req.user stays undefined
+    }
+  }
+}
     const property = await Property.findById(req.params.id).populate(
       'owner',
       'name email avatar agencyName phone'
@@ -150,6 +166,48 @@ export const getPropertyById = async (req, res) => {
       res.status(404);
       throw new Error('Property not found');
     }
+
+    // Public users can only access public + active + approved properties
+if (
+  !req.user &&
+  (
+    property.visibility !== "public" ||
+    property.status !== "approved" ||
+    property.listingStatus !== "active"
+  )
+) {
+  res.status(404);
+  throw new Error("Property not found");
+}
+
+// Owner can access their own properties
+if (
+  req.user &&
+  property.owner._id.toString() === req.user._id.toString()
+) {
+  // Allow access
+}
+
+// Admin can access everything
+else if (
+  req.user &&
+  req.user.role === "admin"
+) {
+  // Allow access
+}
+
+// Logged-in users who are not owner/admin
+else if (
+  req.user &&
+  (
+    property.visibility !== "public" ||
+    property.status !== "approved" ||
+    property.listingStatus !== "active"
+  )
+) {
+  res.status(403);
+  throw new Error("Not authorized to view this property");
+}
 
     // Increment view count
     await Property.findByIdAndUpdate(
@@ -161,9 +219,12 @@ export const getPropertyById = async (req, res) => {
 
     res.json(property);
   } catch (error) {
-    console.error('Error in getPropertyById:', error);
-    res.status(404).json({ message: error.message });
-  }
+  console.error("Error in getPropertyById:", error);
+
+  res.status(res.statusCode === 200 ? 500 : res.statusCode).json({
+    message: error.message,
+  });
+}
 };
 
 // @desc    Create a new property
@@ -184,6 +245,8 @@ export const createProperty = async (req, res) => {
       area,
       propertyType,
       listingType,
+      visibility,
+      listingStatus,
       images,
     } = req.body;
 
@@ -208,8 +271,12 @@ export const createProperty = async (req, res) => {
       propertyType,
       listingType,
       images,
+
+      visibility: visibility || "public",
+      listingStatus: listingStatus || "active",
+
       owner: req.user._id,
-      status: req.user.role === 'admin' ? 'approved' : 'pending',
+      status: 'approved',
     });
 
     res.status(201).json(property);
@@ -250,6 +317,8 @@ export const updateProperty = async (req, res) => {
       area,
       propertyType,
       listingType,
+      visibility,
+      listingStatus,
       images,
     } = req.body;
 
@@ -265,6 +334,14 @@ export const updateProperty = async (req, res) => {
     property.area = area ?? property.area;
     property.propertyType = propertyType || property.propertyType;
     property.listingType = listingType || property.listingType;
+    property.visibility =
+       visibility !== undefined
+         ? visibility
+         : property.visibility;
+    property.listingStatus =
+       listingStatus !== undefined
+        ? listingStatus
+        : property.listingStatus;     
     if (images && images.length > 0) {
       property.images = images;
     }
@@ -303,32 +380,6 @@ export const deleteProperty = async (req, res) => {
   }
 };
 
-// @desc    Update property status (admin only)
-// @route   PATCH /api/v1/properties/:id/status
-// @access  Private/Admin
-export const updatePropertyStatus = async (req, res) => {
-  try {
-    const { status } = req.body;
-    const property = await Property.findById(req.params.id);
-
-    if (!property) {
-      res.status(404);
-      throw new Error('Property not found');
-    }
-
-    if (!['pending', 'approved', 'rejected'].includes(status)) {
-      res.status(400);
-      throw new Error('Invalid status');
-    }
-
-    property.status = status;
-    const updatedProperty = await property.save();
-    res.json(updatedProperty);
-  } catch (error) {
-    console.error('Error in updatePropertyStatus:', error);
-    res.status(400).json({ message: error.message });
-  }
-};
 
 // @desc    Toggle featured status (admin only)
 // @route   PATCH /api/v1/properties/:id/feature

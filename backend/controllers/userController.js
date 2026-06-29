@@ -268,9 +268,10 @@ export const approveAgentRequest = async (req, res) => {
   to: user.email,
   subject: "Agent Request Approved",
   html: `
-    <h2>Congratulations ${user.name}!</h2>
-    <p>Your request to become an agent has been approved.</p>
-    <p>You can now log in and access your Agent Dashboard.</p>
+    <h2>Congratulations, ${user.name}! 🎉</h2>
+    <p>Your request to become a verified Property Dunia Agent has been approved.</p>
+    <p>You can now log in and access your Agent Dashboard to start listing and managing your properties.</p>
+    <p>Thank you for choosing Property Dunia.</p>
   `,
 });
 
@@ -324,9 +325,12 @@ export const rejectAgentRequest = async (req, res) => {
   subject: "Agent Request Rejected",
   html: `
     <h2>Hello ${user.name},</h2>
-    <p>Your agent request has been reviewed.</p>
-    <p><strong>Reason:</strong> ${rejectionReason}</p>
-    <p>You may update your details and submit another request.</p>
+    <h2>Hello ${user.name},</h2>
+
+   <p>Thank you for applying to become a Property Dunia Agent.</p>
+   <p>After reviewing your application, we couldn't approve it at this time.</p>
+   <p><strong>Reason:</strong> ${rejectionReason}</p>
+   <p>You may update your information and submit another request whenever you're ready.</p>
   `,
 });
 

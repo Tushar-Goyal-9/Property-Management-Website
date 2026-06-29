@@ -3,6 +3,7 @@ import {
   createInquiry,
   getMyInquiries,
   markAsRead,
+
 } from '../controllers/inquiryController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { body } from "express-validator";

@@ -58,6 +58,16 @@ const propertySchema = mongoose.Schema(
       enum: ['pending', 'approved', 'rejected'],
       default: 'pending',
     },
+    visibility: {
+    type: String,
+    enum: ["public", "private"],
+    default: "public",
+    },
+    listingStatus: {
+    type: String,
+    enum: ["active", "sold", "rented", "archived"],
+    default: "active",
+    },
     featured: {
       type: Boolean,
       default: false,

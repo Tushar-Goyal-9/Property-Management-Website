@@ -284,7 +284,7 @@ const AdminDashboard = () => {
                     <tr>
                       <th className="px-6 py-4 text-left">Property</th>
                       <th className="px-6 py-4 text-left">Listing Price</th>
-                      <th className="px-6 py-4 text-left">Status</th>
+                      <th className="px-6 py-4 text-left">Visibility</th>
                       <th className="px-6 py-4 text-left">Highlight Type</th>
                       <th className="px-6 py-4 text-center">Actions</th>
                     </tr>
@@ -320,16 +320,14 @@ const AdminDashboard = () => {
                             {formatPrice(property.price)}
                           </td>
 
-                          {/* Status */}
+                          {/* Visibility */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                              property.status === 'approved' 
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-100/50'
-                                : property.status === 'rejected'
-                                ? 'bg-rose-50 text-rose-700 border border-rose-100/50'
-                                : 'bg-amber-50 text-amber-700 border border-amber-100/50'
+                              property.visibility === 'private'
+                                ? 'bg-slate-100 text-slate-600 border border-slate-200'
+                                : 'bg-teal-50 text-teal-700 border border-teal-100/50'
                             }`}>
-                              <span>{property.status || 'pending'}</span>
+                              <span>{property.visibility === 'private' ? '🔒 Private' : '🌍 Public'}</span>
                             </span>
                           </td>
 

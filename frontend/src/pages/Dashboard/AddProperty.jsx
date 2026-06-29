@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Clipboard, ShieldCheck, Home, MapPin, Film, SlidersHorizontal, ArrowLeft } from 'lucide-react';
+import { Sparkles, Clipboard, Home, MapPin, Film, SlidersHorizontal, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
 import Input from '../../components/common/Input';
@@ -24,6 +24,7 @@ const AddProperty = () => {
     area: '',
     propertyType: 'Apartment',
     listingType: 'Sale',
+    visibility: 'public',
   });
   const [images, setImages] = useState([]);
 
@@ -48,7 +49,7 @@ const AddProperty = () => {
         images,
       };
       await api.post('/properties', payload);
-      toast.success('Listing created successfully! Pending verification.');
+      toast.success('Listing created successfully!');
       navigate('/dashboard/agent');
     } catch (error) {
       console.error('Failed to create property:', error);
@@ -150,11 +151,50 @@ const AddProperty = () => {
               </div>
             </div>
 
-            {/* Section 4: Details & Media */}
+            {/* Section 4: Visibility Section */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-4">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-3 text-slate-800">
+                <Sparkles size={15} className="text-teal-600" />
+                <span className="font-outfit text-xs font-bold tracking-wide uppercase">4. Visibility Settings</span>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">Listing Visibility</label>
+                <p className="text-[11px] text-slate-400 font-semibold leading-relaxed">
+                  Public properties are displayed in general search results. Private properties are restricted to you and root administrators.
+                </p>
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, visibility: 'public' })}
+                    className={`flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl border text-xs font-bold transition-all active:scale-[0.98] ${
+                      formData.visibility === 'public'
+                        ? 'bg-teal-50 border-teal-200 text-teal-700 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
+                    }`}
+                  >
+                    <Eye size={14} /> Public Listing (🌍)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, visibility: 'private' })}
+                    className={`flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl border text-xs font-bold transition-all active:scale-[0.98] ${
+                      formData.visibility === 'private'
+                        ? 'bg-teal-50 border-teal-200 text-teal-700 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
+                    }`}
+                  >
+                    <EyeOff size={14} /> Private Listing (🔒)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 5: Details & Media */}
             <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.015)] space-y-4">
               <div className="flex items-center gap-2 border-b border-slate-100 pb-3 text-slate-800">
                 <Film size={15} className="text-teal-600" />
-                <span className="font-outfit text-xs font-bold tracking-wide uppercase">4. Listing Media & Details</span>
+                <span className="font-outfit text-xs font-bold tracking-wide uppercase">5. Listing Media & Details</span>
               </div>
 
               <div className="space-y-1">

@@ -5,7 +5,6 @@ import {
   createProperty,
   updateProperty,
   deleteProperty,
-  updatePropertyStatus,
   toggleFeatured,
 } from '../controllers/propertyController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
@@ -66,6 +65,11 @@ router.route("/")
     body("listingType")
       .isIn(["Sale", "Rent"])
       .withMessage("Invalid listing type"),
+      
+    body("listingStatus")
+      .optional()
+      .isIn(["active", "sold", "rented", "archived"])
+      .withMessage("Invalid listing status"),  
 
     body("images")
       .isArray({ min: 1 })
@@ -87,7 +91,6 @@ router.route('/:id')
   .delete(protect, deleteProperty);
 
 // Admin actions
-router.patch('/:id/status', protect, admin, updatePropertyStatus);
 router.patch('/:id/feature', protect, admin, toggleFeatured);
 
 export default router;
