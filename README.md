@@ -79,7 +79,6 @@ property-dunia/
 │   ├── vite.config.js
 │   └── package.json
 │
-├── PROPERTY_DUNIA_RULES.md  # Architectural guidelines & redesign rules
 ├── README.md
 └── package.json
 ```
