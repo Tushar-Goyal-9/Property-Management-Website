@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutGrid, Eye, MessageSquare, Plus, Edit2, Trash2, Mail, Phone, ExternalLink, ShieldCheck, Star } from 'lucide-react';
+import { LayoutGrid, Eye, MessageSquare, Plus, Edit2, Trash2, Mail, Phone, ExternalLink, ShieldCheck, Star, Share2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
 import useAuthStore from '../../store/authStore';
 import PageWrapper from '../../components/common/PageWrapper';
+import SharePropertyModal from '../../components/property/SharePropertyModal';
 
 const AgentDashboard = () => {
   const { user } = useAuthStore();
@@ -26,6 +27,10 @@ const AgentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedPropertyId, setSelectedPropertyId] = useState(null);
   const [filterCriteria, setFilterCriteria] = useState(null);
+
+  // States for sharing property
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedShareProperty, setSelectedShareProperty] = useState(null);
 
   // Archive & search states for inquiries
   const [showAllInquiries, setShowAllInquiries] = useState(false);
@@ -485,6 +490,16 @@ const AgentDashboard = () => {
                         </div>
 
                         <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                          <button
+                            onClick={() => {
+                              setSelectedShareProperty(property);
+                              setShareModalOpen(true);
+                            }}
+                            className="h-9 w-9 bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-800 transition-all active:scale-95"
+                            title="Share listing"
+                          >
+                            <Share2 size={13} />
+                          </button>
                           <Link
                             to={`/dashboard/edit-property/${property._id}`}
                             className="h-9 w-9 bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-800 transition-all active:scale-95"
@@ -686,6 +701,14 @@ const AgentDashboard = () => {
 
         </div>
       </div>
+      <SharePropertyModal
+        isOpen={shareModalOpen}
+        onClose={() => {
+          setShareModalOpen(false);
+          setSelectedShareProperty(null);
+        }}
+        property={selectedShareProperty}
+      />
     </PageWrapper>
   );
 };

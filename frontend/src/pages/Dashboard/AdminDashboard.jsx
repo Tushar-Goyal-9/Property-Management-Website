@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Users, Building, Trash2, ExternalLink, ShieldAlert, Inbox, Edit2, LayoutGrid, Eye, MessageSquare, Plus, Mail, Phone, Star, ShieldCheck
+  Users, Building, Trash2, ExternalLink, ShieldAlert, Inbox, Edit2, LayoutGrid, Eye, MessageSquare, Plus, Mail, Phone, Star, ShieldCheck, Share2
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
@@ -9,6 +9,7 @@ import useAuthStore from '../../store/authStore';
 import PageWrapper from '../../components/common/PageWrapper';
 import Spinner from '../../components/common/Spinner';
 import { formatPrice } from '../../utils/formatters';
+import SharePropertyModal from '../../components/property/SharePropertyModal';
 
 const AdminDashboard = () => {
   const { user: _user } = useAuthStore();
@@ -87,6 +88,8 @@ const AdminDashboard = () => {
   const [statsSortBy, setStatsSortBy] = useState('views-desc');
 
   // Revoke Agent & User Management states
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedShareProperty, setSelectedShareProperty] = useState(null);
   const [revokingAgentId, setRevokingAgentId] = useState(null);
   const [revokingAgentName, setRevokingAgentName] = useState('');
   const [deletingUserId, setDeletingUserId] = useState(null);
@@ -815,21 +818,31 @@ const AdminDashboard = () => {
                             </div>
 
                             <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                              <Link
-                                to={`/dashboard/edit-property/${property._id}`}
-                                className="h-9 w-9 bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-800 transition-all active:scale-95"
-                                title="Edit listing"
-                              >
-                                <Edit2 size={13} />
-                              </Link>
-                              <button
-                                onClick={() => handleDeleteProperty(property._id)}
-                                className="h-9 w-9 bg-slate-50 border border-slate-200 hover:border-red-250 hover:bg-red-55 rounded-xl flex items-center justify-center text-slate-600 hover:text-red-655 transition-all active:scale-95"
-                                title="Delete listing"
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            </div>
+                               <button
+                                 onClick={() => {
+                                   setSelectedShareProperty(property);
+                                   setShareModalOpen(true);
+                                 }}
+                                 className="h-9 w-9 bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-800 transition-all active:scale-95"
+                                 title="Share listing"
+                               >
+                                 <Share2 size={13} />
+                               </button>
+                               <Link
+                                 to={`/dashboard/edit-property/${property._id}`}
+                                 className="h-9 w-9 bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-800 transition-all active:scale-95"
+                                 title="Edit listing"
+                               >
+                                 <Edit2 size={13} />
+                               </Link>
+                               <button
+                                 onClick={() => handleDeleteProperty(property._id)}
+                                 className="h-9 w-9 bg-slate-50 border border-slate-200 hover:border-red-250 hover:bg-red-55 rounded-xl flex items-center justify-center text-slate-600 hover:text-red-655 transition-all active:scale-95"
+                                 title="Delete listing"
+                               >
+                                 <Trash2 size={13} />
+                               </button>
+                             </div>
                           </div>
                         ))
                       ) : (
@@ -1589,6 +1602,14 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
+      <SharePropertyModal
+        isOpen={shareModalOpen}
+        onClose={() => {
+          setShareModalOpen(false);
+          setSelectedShareProperty(null);
+        }}
+        property={selectedShareProperty}
+      />
     </PageWrapper>
   );
 };

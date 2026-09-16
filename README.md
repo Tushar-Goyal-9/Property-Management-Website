@@ -1,48 +1,48 @@
 # 🏠 Property Dunia – MERN Stack Property Management System
 
-Property Dunia is a full‑stack property management web application built using the MERN stack.  
-It supports three user roles – **Admin**, **Property Agent**, and **Normal User** – with features like property listings, advanced search/filter, wishlist, inquiries, Cloudinary image uploads, and role‑based dashboards.
+Property Dunia is a production-ready, full-stack real estate property management web application built using the MERN stack.  
+It supports three user roles – **Admin**, **Property Agent**, and **Normal User** – with features like property listings, advanced search & filtering, wishlist management, property inquiries, direct WhatsApp communication, signed Cloudinary image uploads, transactional email notifications via Resend, and role-based administrative dashboards.
 
 ---
 
 ## 📌 Project Overview
 
-The main goal of this project is to create a real‑world real estate platform where:
+The main goal of Property Dunia is to create a real-world real estate ecosystem where:
 
-- Users can browse, search, and filter properties
-- Users can save properties to a wishlist and contact agents
-- Agents can add, edit, and manage their own property listings
-- Admins can manage users and approve/reject property listings
-- Each property includes multiple images, details, and inquiry functionality
-- Authentication and authorization are handled securely with JWT
+- **Users** can browse, search, and filter properties by city, price range, bedrooms, and listing type; save favorites to a wishlist; submit inquiries; and contact agents directly via WhatsApp.
+- **Agents** can apply for agent verification, upload and manage their own property listings, upload multiple high-res images directly to Cloudinary, track view/inquiry stats, and handle buyer inquiries.
+- **Admins** have full system control to manage users, approve/reject property listings, review agent verification applications, revoke agent privileges, and mark properties as "Featured" or "Hot".
+- **Security & Performance** are maintained via JWT authentication, HTTP-only cookies, password hashing with bcrypt, rate limiting, and compound MongoDB indexing.
 
 ---
 
 ## 🛠️ Tech Stack Used
 
 ### Frontend
-- React.js (Vite) – Component‑based UI development
-- React Router DOM – Client‑side routing
-- Tailwind CSS – Utility‑first styling
-- Zustand – Lightweight global state management (auth)
-- Axios – API communication with interceptors
-- Framer Motion – Smooth page transitions
-- Lucide React – Modern icon library
+- **React.js (Vite)** – High-performance component-based UI
+- **React Router DOM v6** – Client-side routing with protected routes
+- **Tailwind CSS** – Custom utility-first styling & responsive layouts
+- **Zustand** – Global auth state management
+- **Axios** – Centralized API client with request/response interceptors
+- **Framer Motion** – Smooth page transitions and modal animations
+- **Lucide React** – Clean modern icons
 
 ### Backend
-- Node.js – JavaScript runtime
-- Express.js – REST API framework
-- MongoDB – NoSQL database (Atlas)
-- Mongoose – MongoDB object modeling
+- **Node.js** – JavaScript backend runtime
+- **Express.js** – RESTful API architecture
+- **MongoDB Atlas** – Cloud NoSQL database
+- **Mongoose** – Object Data Modeling (ODM) with custom indexes
 
-### Authentication & Security
-- JWT (JSON Web Tokens) stored in HTTP‑only cookies
-- bcryptjs – Password hashing
-- Role‑based access control (Admin / Agent / User)
-- CORS configured for credentials
+### Authentication, Security & Utilities
+- **JWT (JSON Web Tokens)** – Auth token stored in HTTP-only cookies & local storage
+- **bcryptjs** – Secure password hashing
+- **Helmet.js** – HTTP headers security
+- **Express Rate Limit** – API rate limiting & DDoS protection
+- **Cors** – Cross-Origin Resource Sharing with credentials support
 
-### Media
-- Cloudinary – Secure image uploads with signed signatures
+### Third-Party Services
+- **Cloudinary** – Direct client-side image uploads via server-signed signatures
+- **Resend** – Transactional email delivery for password reset flows
 
 ---
 
@@ -52,119 +52,133 @@ The main goal of this project is to create a real‑world real estate platform w
 property-dunia/
 │
 ├── backend/
-│   ├── config/              # MongoDB connection
+│   ├── config/              # MongoDB connection setup
 │   ├── controllers/         # Business logic (auth, properties, inquiries, users, upload)
-│   ├── middleware/          # Auth, admin, error middleware
-│   ├── models/              # User, Property, Inquiry schemas
-│   ├── routes/              # API routes
-│   ├── .env                 # Environment variables (not committed)
-│   ├── .gitignore
-│   ├── server.js
+│   ├── middleware/          # Auth, admin, error, rate-limit, and validation middleware
+│   ├── models/              # Mongoose schemas (User, Property, Inquiry)
+│   ├── routes/              # Express API route declarations (auth, property, user, inquiry, upload)
+│   ├── utils/               # Utilities (sendEmail via Resend)
+│   ├── .env.example         # Template for environment variables
+│   ├── server.js            # Express application entry point
 │   └── package.json
 │
 ├── frontend/
 │   ├── public/
 │   ├── src/
-│   │   ├── assets/
-│   │   ├── components/      # Reusable UI (common, layout, property, dashboard)
-│   │   ├── pages/           # Application pages (Home, Properties, Details, Auth, Dashboards)
-│   │   ├── routes/          # ProtectedRoute, AdminRoute
-│   │   ├── store/           # Zustand auth store
-│   │   ├── services/        # Axios API service
-│   │   ├── hooks/           # Custom hooks (useAuth, useProperties)
-│   │   ├── utils/           # Helper functions (formatPrice, formatDate)
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css        # Tailwind directives
-│   ├── .env                 # VITE_API_URL, Cloudinary keys (not committed)
-│   ├── .gitignore
+│   │   ├── assets/          # Static media assets
+│   │   ├── components/      # Reusable UI (common, layout, property)
+│   │   ├── pages/           # Application views (Home, Properties, PropertyDetails, Auth, Dashboards)
+│   │   ├── routes/          # Route guards (ProtectedRoute, AdminRoute)
+│   │   ├── store/           # Zustand store (authStore)
+│   │   ├── services/        # Axios API client setup (api.js)
+│   │   ├── utils/           # Helper formatters & WhatsApp utilities
+│   │   ├── App.jsx          # Master component router & transitions
+│   │   ├── main.jsx         # App mounting
+│   │   └── index.css        # Tailwind CSS imports & global styles
 │   ├── tailwind.config.js
 │   ├── vite.config.js
 │   └── package.json
 │
-├── .gitignore
-└── README.md
+├── PROPERTY_DUNIA_RULES.md  # Architectural guidelines & redesign rules
+├── README.md
+└── package.json
 ```
-
-
-
 
 ---
 
 ## ✨ Key Features
 
-### All Users
-- View property listings with image galleries
-- Advanced search and filter (city, price, bedrooms, property type, sort)
-- Property detail page with full information
-- Responsive design (mobile‑first)
+### 👤 All Visitors & Users
+- **Explore Listings**: Filter by city, min/max price, bedrooms, property type (Apartment, House, Villa, Office, Land, Condo), and listing type (Sale/Rent).
+- **Compound Search Indexing**: Fast query responses using MongoDB indexed fields.
+- **Property Details**: High-resolution image galleries, technical specs, address, owner/agent contact details, and view counters.
+- **Direct WhatsApp Chat**: One-click pre-filled WhatsApp messaging with property owners/agents.
 
-### Registered Users (Buyers/Renters)
-- Secure login / registration
-- Wishlist – save favorite properties
-- Contact agents via inquiry form
-- User dashboard with wishlist and inquiry history
+### 🔐 Registered Buyers & Renters
+- **Secure Authentication**: Register/Login with JWT and persistent session checks.
+- **Wishlist Management**: One-click save/remove favorite properties synced to the user profile in MongoDB.
+- **Inquiry Submission**: Send inquiries directly to listing agents.
+- **User Dashboard**: Track personal inquiries, wishlist items, and apply for Agent verification.
+- **Password Reset Flow**: Request password reset via Resend email links with cryptographic reset tokens.
 
-### Property Agents
-- Agent dashboard with stats (total listings, views, inquiries)
-- Add, edit, and delete own property listings
-- Upload multiple images directly to Cloudinary
-- View and manage inquiries for own properties (mark as read)
+### 🏢 Property Agents
+- **Agent Verification Workflow**: Submit agency details and license numbers for admin approval.
+- **Agent Dashboard**: Real-time property and inquiry analytics (total views, total inquiries, active/sold/rented/archived status counts).
+- **Listing Management**: Add, update, archive, or delete property listings.
+- **Signed Cloudinary Uploads**: Secure direct multi-image uploads using signed server signatures.
+- **Inquiry Inbox**: Review inquiries, filter by date/name, star important leads, and mark messages as read.
 
-### Admin
-- Admin dashboard with overview stats
-- Manage users (view all users)
-- Approve or reject property listings submitted by agents
-- Mark properties as "Featured"
-- Delete any property
-
-### UI/UX
-- Clean, minimal, modern design
-- Glass‑morphism hero section
-- Smooth page transitions with Framer Motion
-- Hover effects on property cards
-- Professional icons with Lucide React
+### 👑 Admin Management
+- **Admin Dashboard**: System-wide overview metrics (users, agents, listings, views, pending applications).
+- **User & Agent Control**: Approve/reject agent applications with custom feedback, revoke agent privileges, or delete users.
+- **Property Moderation**: Approve/reject property listings, feature premium listings, or mark hot deals.
 
 ---
 
-## 🔐 Authentication Flow
+## 🔐 Authentication & Security Flow
 
-1. User/Agent/Admin registers or logs in
-2. Backend verifies credentials and hashes password (bcrypt)
-3. JWT token generated and set as HTTP‑only cookie
-4. Frontend Zustand store fetches user data via `/auth/me`
-5. Protected routes validate token and role
-6. Logout clears the cookie
-
-**Why HTTP‑only cookies?**
-- Protects against XSS attacks (JavaScript cannot read the cookie)
-- Automatically sent with every request
+```text
+User Input (Login/Register) ➔ React State ➔ Axios POST /api/v1/auth/login
+                                                  │
+┌─────────────────────────────────────────────────┴─────────────────────────────────────────────────┐
+│ Express Server                                                                                    │
+│  1. Check User in MongoDB Atlas                                                                   │
+│  2. Verify Password Hash via bcrypt.compare()                                                     │
+│  3. Sign JWT Token (7-Day Expiry)                                                                 │
+│  4. Attach Token to HTTP-Only Cookie (res.cookie) AND JSON Body                                   │
+└─────────────────────────────────────────────────┬─────────────────────────────────────────────────┘
+                                                  │
+React App ➔ Store Token in LocalStorage & Zustand ➔ Axios Interceptor Attaches Authorization Header
+```
 
 ---
 
-## 🌐 API Endpoints
+## 🌐 API Endpoints Reference
 
-| Method | Endpoint                              | Access            | Description                     |
-|--------|---------------------------------------|-------------------|---------------------------------|
-| POST   | `/api/v1/auth/register`               | Public            | Register user/agent             |
-| POST   | `/api/v1/auth/login`                  | Public            | Login, sets JWT cookie          |
-| POST   | `/api/v1/auth/logout`                 | Public            | Logout, clears cookie           |
-| GET    | `/api/v1/auth/me`                     | Private           | Get current user                |
-| GET    | `/api/v1/properties`                  | Public            | Get properties (filter/search)  |
-| GET    | `/api/v1/properties/:id`              | Public            | Get single property             |
-| POST   | `/api/v1/properties`                  | Agent/Admin       | Create new property             |
-| PUT    | `/api/v1/properties/:id`              | Owner/Admin       | Update property                 |
-| DELETE | `/api/v1/properties/:id`              | Owner/Admin       | Delete property                 |
-| PATCH  | `/api/v1/properties/:id/status`       | Admin             | Approve/reject property         |
-| PATCH  | `/api/v1/properties/:id/feature`      | Admin             | Toggle featured status          |
-| GET    | `/api/v1/users/wishlist`              | Private           | Get user's wishlist             |
-| POST   | `/api/v1/users/wishlist/:id`          | Private           | Add to wishlist                 |
-| DELETE | `/api/v1/users/wishlist/:id`          | Private           | Remove from wishlist            |
-| GET    | `/api/v1/users`                       | Admin             | Get all users                   |
-| POST   | `/api/v1/inquiries`                   | Private           | Submit inquiry                  |
-| GET    | `/api/v1/inquiries`                   | Private           | Get inquiries (user/agent)      |
-| PATCH  | `/api/v1/inquiries/:id/read`          | Agent             | Mark inquiry as read            |
-| GET    | `/api/v1/upload/signature`            | Private           | Get Cloudinary upload signature |
+### Auth Routes (`/api/v1/auth`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/register` | Public | Register a new user |
+| POST | `/login` | Public | Login user & issue JWT cookie/token |
+| POST | `/logout` | Public | Clear auth cookie |
+| GET | `/me` | Private | Get logged-in user profile |
+| POST | `/forgot-password` | Public | Send password reset email via Resend |
+| POST | `/reset-password/:token` | Public | Reset password using valid token |
+
+### Property Routes (`/api/v1/properties`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/` | Public | Get properties (filters, pagination, sort) |
+| GET | `/:id` | Public | Get single property details (increments view count) |
+| GET | `/admin` | Admin | Get all properties (including pending/private) |
+| GET | `/admin/dashboard` | Admin | Get admin system-wide analytics |
+| GET | `/dashboard/stats` | Agent/Admin | Get owner property & inquiry metrics |
+| POST | `/` | Agent/Admin | Create new property listing |
+| PUT | `/:id` | Owner/Admin | Update existing property listing |
+| DELETE | `/:id` | Owner/Admin | Delete property listing |
+| PATCH | `/:id/status` | Admin | Approve or reject property listing |
+| PATCH | `/:id/feature` | Admin | Toggle featured property status |
+| PATCH | `/:id/hot` | Admin | Toggle hot deal property status |
+
+### User & Wishlist Routes (`/api/v1/users`)
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/` | Admin | Get all registered users |
+| GET | `/wishlist` | Private | Get current user's wishlist properties |
+| POST | `/wishlist/:id` | Private | Add property to user's wishlist |
+| DELETE | `/wishlist/:id` | Private | Remove property from user's wishlist |
+| PATCH | `/agent-request` | User | Submit application for Agent verification |
+| PATCH | `/agent-request/:id` | Admin | Approve or reject agent application |
+| PATCH | `/:id/revoke-agent` | Admin | Revoke agent privileges back to normal user |
+| DELETE | `/:id` | Admin | Delete a user account |
+
+### Inquiry & Upload Routes
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| POST | `/api/v1/inquiries` | Private | Submit inquiry for a property |
+| GET | `/api/v1/inquiries` | Private | Get user or agent inquiries |
+| PATCH | `/api/v1/inquiries/:id/read` | Agent/Admin | Mark inquiry as read |
+| GET | `/api/v1/upload/signature` | Private | Generate signed Cloudinary upload params |
 
 ---
 
@@ -176,72 +190,75 @@ git clone https://github.com/Tushar-Goyal-9/Property-Management-Website.git
 cd Property-Management-Website
 ```
 
-### 2. Backend
+### 2. Backend Setup
 ```bash
 cd backend
 npm install
 ```
-#### **Create .env in backend/:**
-```bash
+
+#### **Create `.env` inside `backend/`:**
+```env
 PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+NODE_ENV=development
+MONGO_URI=your_mongodb_atlas_connection_string
+JWT_SECRET=your_jwt_secret_key
+
+# Cloudinary Setup
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+# Email Setup (Resend)
+RESEND_API_KEY=your_resend_api_key
 ```
-#### **Start the backend:**
+
+#### **Start Backend Server:**
 ```bash
 npm run dev
-# or
-npx nodemon server.js
 ```
-### 3. Frontend
+
+### 3. Frontend Setup
 ```bash
 cd ../frontend
 npm install
 ```
-#### **Create .env in frontend/:**
-```bash
+
+#### **Create `.env` inside `frontend/`:**
+```env
 VITE_API_URL=http://localhost:5000/api/v1
-VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
-VITE_CLOUDINARY_API_KEY=your_api_key
+VITE_BACKEND_URL=http://localhost:5000
+VITE_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+VITE_CLOUDINARY_API_KEY=your_cloudinary_api_key
 ```
-#### **Start the frontend:**
+
+#### **Start Frontend Client:**
 ```bash
 npm run dev
 ```
-### 4. Access the Application
 
-## ✨  Learning Outcomes
+### 4. Access App
+Open `http://localhost:5173` in your browser.
 
-Through this project, I learned:
-- Full MERN stack architecture with separate frontend/backend
-- RESTful API design and implementation
-- JWT authentication with HTTP‑only cookies (secure)
-- Role‑based access control (Admin, Agent, User)
-- Advanced MongoDB queries (search, filter, pagination)
-- Cloudinary direct uploads with server‑side signatures
-- Responsive UI with Tailwind CSS
-- Page transitions with Framer Motion
-- Git & GitHub workflow
+---
 
+## 🎓 Key Engineering Insights & Learnings
+
+- **Full MERN Stack Architecture**: Designed a decoupled frontend and backend using RESTful standards.
+- **Client-Side Media Upload**: Offloaded binary file handling by generating signed Cloudinary signatures on Express and uploading directly from React via Axios.
+- **Granular RBAC**: Implemented role-based access control supporting `user`, `agent`, and `admin` workflows.
+- **Transactional Emails**: Integrated Resend SDK for cryptographic password reset emails.
+- **Database Query Performance**: Created MongoDB compound indexes for optimized searching across multiple filter fields.
+
+---
 
 ## 👨‍💻 Developer
 [**Tushar Goyal**](https://github.com/Tushar-Goyal-9)
 
+---
+
 ## ⭐ Future Enhancements
 
-Planned improvements for the project:
-- Map integration (Leaflet / Google Maps)
-- Mortgage calculator
-- Email notifications for inquiries and approvals
-- Property analytics dashboard for agents
-- Save search filters and alerts
-- Virtual tour embed (YouTube / Matterport)
-- Progressive Web App (PWA) support
-
-
-
-
-
+- [ ] Interactive map view using Leaflet / Mapbox
+- [ ] Real-time Socket.io notifications for new inquiries & approvals
+- [ ] Financial Mortgage & EMI Calculator
+- [ ] Virtual 360 property tours (Matterport / Panorama embeds)

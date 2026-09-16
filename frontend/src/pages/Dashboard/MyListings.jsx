@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutGrid, Eye, Plus, Edit2, Trash2, CheckCircle2, AlertCircle, Clock, ExternalLink } from 'lucide-react';
+import { LayoutGrid, Eye, Plus, Edit2, Trash2, CheckCircle2, AlertCircle, Clock, ExternalLink, Share2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
 import useAuthStore from '../../store/authStore';
 import Spinner from '../../components/common/Spinner';
 import PageWrapper from '../../components/common/PageWrapper';
 import { formatPrice } from '../../utils/formatters';
+import SharePropertyModal from '../../components/property/SharePropertyModal';
 
 const MyListings = () => {
   const { user } = useAuthStore();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // States for sharing property
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedShareProperty, setSelectedShareProperty] = useState(null);
 
   useEffect(() => {
     const fetchMyProperties = async () => {
@@ -152,22 +157,32 @@ const MyListings = () => {
 
                         {/* Actions */}
                         <td className="px-6 py-4.5 whitespace-nowrap text-center">
-                          <div className="inline-flex items-center gap-1.5">
-                            <Link
-                              to={`/dashboard/edit-property/${prop._id}`}
-                              className="h-8 w-8 bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 transition-all active:scale-95"
-                              title="Edit listing"
-                            >
-                              <Edit2 size={12} />
-                            </Link>
-                            <button
-                              onClick={() => handleDelete(prop._id)}
-                              className="h-8 w-8 bg-slate-50 border border-slate-200 hover:border-red-200 hover:bg-red-50 rounded-xl flex items-center justify-center text-slate-600 hover:text-red-600 transition-all active:scale-95"
-                              title="Delete listing"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </div>
+                           <div className="inline-flex items-center gap-1.5">
+                             <button
+                               onClick={() => {
+                                 setSelectedShareProperty(prop);
+                                 setShareModalOpen(true);
+                               }}
+                               className="h-8 w-8 bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 transition-all active:scale-95"
+                               title="Share listing"
+                             >
+                               <Share2 size={12} />
+                             </button>
+                             <Link
+                               to={`/dashboard/edit-property/${prop._id}`}
+                               className="h-8 w-8 bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 transition-all active:scale-95"
+                               title="Edit listing"
+                             >
+                               <Edit2 size={12} />
+                             </Link>
+                             <button
+                               onClick={() => handleDelete(prop._id)}
+                               className="h-8 w-8 bg-slate-50 border border-slate-200 hover:border-red-200 hover:bg-red-50 rounded-xl flex items-center justify-center text-slate-600 hover:text-red-600 transition-all active:scale-95"
+                               title="Delete listing"
+                             >
+                               <Trash2 size={12} />
+                             </button>
+                           </div>
                         </td>
 
                       </tr>
@@ -178,8 +193,16 @@ const MyListings = () => {
             </div>
           )}
 
-        </div>
+         </div>
       </div>
+      <SharePropertyModal
+        isOpen={shareModalOpen}
+        onClose={() => {
+          setShareModalOpen(false);
+          setSelectedShareProperty(null);
+        }}
+        property={selectedShareProperty}
+      />
     </PageWrapper>
   );
 };
