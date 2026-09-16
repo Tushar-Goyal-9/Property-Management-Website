@@ -1,6 +1,6 @@
 # 🏠 Property Dunia – MERN Stack Property Management System
 
-Property Dunia is a production-ready, full-stack real estate property management web application built using the MERN stack.  
+Property Dunia is a full-stack real estate property management web application built using the MERN stack.  
 It supports three user roles – **Admin**, **Property Agent**, and **Normal User** – with features like property listings, advanced search & filtering, wishlist management, property inquiries, direct WhatsApp communication, signed Cloudinary image uploads, transactional email notifications via Resend, and role-based administrative dashboards.
 
 ---
