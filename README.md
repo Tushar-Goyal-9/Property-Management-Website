@@ -54,7 +54,7 @@ property-dunia/
 ├── backend/
 │   ├── config/              # MongoDB connection setup
 │   ├── controllers/         # Business logic (auth, properties, inquiries, users, upload)
-│   ├── middleware/          # Auth, admin, error, rate-limit, and validation middleware
+│   ├── middleware/          # Auth, upload, error, rate-limit, and validation middleware
 │   ├── models/              # Mongoose schemas (User, Property, Inquiry)
 │   ├── routes/              # Express API route declarations (auth, property, user, inquiry, upload)
 │   ├── utils/               # Utilities (sendEmail via Resend)
